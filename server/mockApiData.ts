@@ -9,4 +9,5 @@ export const items = [
   { id: 'enduring-spirit', name: { en: 'Enduring Spirit', ja: 'エンデュアリングスピリット' }, category: { en: 'Vitality', ja: '耐久' }, price: 500, icon: '💚', stats: { health: 120, spiritPower: 4 }, effects: [{ id: 'lifesteal-active', name: { en: 'Sustained fight', ja: '継戦' }, description: { en: 'Toggle when its sustain bonus should be counted.', ja: 'サステインボーナスを計算に含める場合に有効化します。' }, stats: { health: 40 }, conditional: true, defaultEnabled: false }] },
   { id: 'extra-stamina', name: { en: 'Extra Stamina', ja: 'エクストラスタミナ' }, category: { en: 'Vitality', ja: '耐久' }, price: 500, icon: '🏃', stats: { stamina: 1, moveSpeed: 0.3 }, effects: [] },
   { id: 'mystic-burst', name: { en: 'Mystic Burst', ja: 'ミスティックバースト' }, category: { en: 'Spirit', ja: 'スピリット' }, price: 1250, icon: '✨', stats: { spiritPower: 12 }, effects: [{ id: 'burst-window', name: { en: 'Burst proc', ja: 'バースト発動' }, description: { en: 'Enable when the burst condition is active.', ja: 'バースト条件が成立している場合に有効化します。' }, stats: { spiritPower: 8 }, conditional: true, defaultEnabled: false }] },
+
 ];

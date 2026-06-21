@@ -2,10 +2,12 @@ import { useEffect, useMemo, useState } from 'react';
 import { Plus, X } from 'lucide-react';
 import { fetchHeroes, fetchItems } from './api/deadlockApi';
 import type { Hero, Item, Locale, SelectedItem } from './types';
+
 import { calculateStats, statKeys, statLabels } from './utils/calculateStats';
 import './styles.css';
 
 const copy = {
+
   en: {
     title: 'Deadlock Build Simulator',
     subtitle: 'Hero and item data is loaded from the Node API. The API can later read Supabase data refreshed by a weekly external sync.',
@@ -138,6 +140,7 @@ export default function App() {
           </article>;
         })}
       </section>
+
       <section className="stats-panel"><h2>{t.stats}</h2>{statKeys.map((key) => <div className="stat-row" key={key}><span>{statLabels[key][locale]}</span><strong>{Number.isInteger(stats[key]) ? stats[key] : stats[key].toFixed(2)}</strong></div>)}</section>
     </section>
     {isHeroModalOpen && <div className="modal-backdrop" role="dialog" aria-modal="true"><div className="modal"><div className="modal-heading"><h2>{t.selectHero}</h2><button onClick={() => setHeroModalOpen(false)}><X /></button></div>{heroes.map((candidate) => <button className="hero-choice" key={candidate.id} onClick={() => { setHeroId(candidate.id); setHeroModalOpen(false); }}><span>{candidate.icon}</span><div><strong>{candidate.name[locale]}</strong><small>{candidate.role[locale]}</small></div></button>)}</div></div>}
