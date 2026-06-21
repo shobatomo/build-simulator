@@ -1,6 +1,7 @@
 # Deadlock Build Simulator
 
-React/Vite + Express MVP for a Deadlock MOBA build simulator. The current app uses mock data while keeping the model close to a future Supabase-backed implementation.
+React/Vite + Express MVP for a Deadlock MOBA build simulator. The frontend requests hero and item data from the Express API. The API currently serves mock data while keeping the model close to a future Supabase-backed implementation.
+
 
 ## Why React/Vite + Express
 
@@ -34,6 +35,9 @@ npm run dev
 - Left panel: hero icon/selector, level control, item picker.
 - Right panel: build summary and large stats panel.
 - Japanese/English UI toggle.
+
+- Frontend fetches heroes and items from `GET /api/heroes` and `GET /api/items`.
+
 - Automatic stat calculation from hero level, base stats, item stats, passive effects, and user-toggleable conditional effects.
 - Build persistence is intentionally out of scope for the first MVP.
 
