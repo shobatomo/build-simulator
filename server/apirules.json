@@ -1,0 +1,100 @@
+{
+    "name": "deadlock.io static API",
+    "version": "v1",
+    "description": "Patch-versioned, fully-localized Deadlock game data extracted directly from the local game client.",
+    "source": {
+        "appId": "1422450",
+        "buildId": "23777839",
+        "generatedAt": "2026-06-18T00:39:14.183Z",
+        "languages": 17
+    },
+    "counts": {
+        "releasedHeroes": 38,
+        "developmentHeroes": 19,
+        "shopItems": 170,
+        "npcs": 16
+    },
+    "endpoints": [
+        {
+            "path": "/api/v1/manifest.json",
+            "description": "Build metadata, languages and entity counts."
+        },
+        {
+            "path": "/api/v1/heroes.json",
+            "description": "Released heroes with abilities, weapon stats, tags, progression and base stats."
+        },
+        {
+            "path": "/api/v1/heroes/{slug}.json",
+            "description": "A single hero by slug."
+        },
+        {
+            "path": "/api/v1/heroes/{slug}/model.json",
+            "description": "A hero's web-ready 3D showcase model (GLB): the in-client hero-select model + animation."
+        },
+        {
+            "path": "/api/v1/items.json",
+            "description": "Shop items by Weapon / Vitality / Spirit category and tier."
+        },
+        {
+            "path": "/api/v1/items/{slug}.json",
+            "description": "A single item by slug."
+        },
+        {
+            "path": "/api/v1/abilities.json",
+            "description": "Every ability and item-ability with properties, scaling and the in-client tooltip card."
+        },
+        {
+            "path": "/api/v1/abilities/{slug}.json",
+            "description": "A single playable ability: tooltip card (Main/Alt stats, corner stats, status effects, per-tier upgrades), properties and scaling."
+        },
+        {
+            "path": "/api/v1/npcs.json",
+            "description": "Map objectives, troopers, denizen camps and bosses with health and soul bounty."
+        },
+        {
+            "path": "/api/v1/globals.json",
+            "description": "Game-systems constants: damage-type colours, lanes, soul economy, Rejuvenator/Urn timings and skill-tier benchmarks."
+        },
+        {
+            "path": "/api/v1/mechanics.json",
+            "description": "Player-facing mechanic explainers."
+        },
+        {
+            "path": "/api/v1/mechanics/{slug}.json",
+            "description": "A single mechanic."
+        },
+        {
+            "path": "/api/v1/updates.json",
+            "description": "Parsed patch notes with per-entity change targeting."
+        },
+        {
+            "path": "/api/v1/updates/{slug}.json",
+            "description": "A single patch."
+        },
+        {
+            "path": "/api/v1/news.json",
+            "description": "Client news surface and external feed entries."
+        },
+        {
+            "path": "/api/v1/leaderboards.json",
+            "description": "Rank ladder, badges and leaderboard snapshots."
+        },
+        {
+            "path": "/api/v1/locales.json",
+            "description": "Supported client languages and site locales."
+        },
+        {
+            "path": "/api/v1/assets.json",
+            "description": "Exported web asset manifest (icons, portraits, badges, hero showcase models)."
+        },
+        {
+            "path": "/api/v1/sources.json",
+            "description": "Data providers and how each surface is sourced."
+        },
+        {
+            "path": "/api/v1/graph.json",
+            "description": "Cross-entity relationship graph."
+        }
+    ],
+    "license": "Game data is property of Valve. This project is an unofficial community tool."
+}

@@ -5,6 +5,12 @@ interface ApiResponse<T> {
   source: string;
 }
 
+interface DeadlockDataResponse {
+  heroes: Hero[];
+  items: Item[];
+  assets: unknown;
+}
+
 const getJson = async <T>(path: string): Promise<T> => {
   const response = await fetch(path);
 
@@ -24,3 +30,6 @@ export const fetchItems = async () => {
   const response = await getJson<ApiResponse<Item[]>>('/api/items');
   return response.data;
 };
+
+export const fetchDeadlockData = () =>
+  getJson<DeadlockDataResponse>('/api/sync/deadlock-data-first');
