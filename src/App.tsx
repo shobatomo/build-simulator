@@ -138,7 +138,6 @@ export default function App() {
       ),
     );
   };
-
   if (isLoading) {
     return (
       <main className="app-shell status-screen">

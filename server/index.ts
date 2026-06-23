@@ -10,6 +10,7 @@ const DEADLOCK_API_BASE = 'https://deadlock.io/api/v1';
 const DEADLOCK_ASSET_BASE = 'https://deadlock.io';
 const INITIAL_ENDPOINTS = ['manifest', 'heroes', 'items', 'abilities', 'assets', 'globals', 'sources'] as const;
 
+
 app.use(cors());
 app.use(express.json());
 
@@ -53,6 +54,7 @@ app.get('/api/sync/deadlock-data-first', async (_request, response) => {
   }
 });
 
+
 type DeadlockDataType = (typeof INITIAL_ENDPOINTS)[number];
 
 type JsonRecord = Record<string, unknown>;
@@ -64,7 +66,6 @@ type DeadlockInitialData = {
       ? RawItemsResponse
       : JsonRecord;
 };
-
 interface RawLocalizedText {
   english?: string | null;
   byLanguage?: {
@@ -243,7 +244,6 @@ function formatItemData(rawData: RawItemsResponse, abilitiesData: JsonRecord): I
         : [],
     }));
 }
-
 function collectAssets(entries: Array<{ id?: string | number; slug?: string; assets?: Record<string, RawAsset | string | undefined> | null }>) {
   return entries.map((entry) => ({
     id: String(entry.id ?? entry.slug),
