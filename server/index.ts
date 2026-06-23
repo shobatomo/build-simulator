@@ -33,9 +33,11 @@ app.get('/api/sync/deadlock-data-first', async (_request, response) => {
 
     // それぞれのデータを整形する関数を呼び出す
     const formattedHeroesData = formatHeroData(heroesData);
+    const formattedItemsData = formatItemData(itemsData);
+
 
     response.json({
-      items: itemsData,
+      items: formattedItemsData,
       heroes: formattedHeroesData,
       assets: assetsData,
     });
@@ -88,10 +90,17 @@ interface FormattedHeroData {
   };
   stats: { [key: string]: JsonValue };
 }
+interface RawItemData {
 
+};
+
+interface FormattedItemData {
+
+};
 
 function formatHeroData(rawData: RawHeroData): FormattedHeroData[] {
   // ここで生データをフロントエンドで表示する形に整形する
+  // ヒーローデータ、
   const formattedData = rawData.heroes.map((hero) => ({
     id: hero.heroId,
     name: {
@@ -100,8 +109,32 @@ function formatHeroData(rawData: RawHeroData): FormattedHeroData[] {
     },
     stats:hero.stats,
   }));
+
   console.log('Formatted hero data:', formattedData); // 整形後のデータをログに出力して確認する
   return formattedData;
+}
+
+function formatItemData(rawData: RawItemData): FormattedItemData[] {
+  // アイテムデータをフロントエンドで表示する形に整形する
+  const fotmattedData = rawData.items.map((item) => ({
+     if (item.activation) {
+      // 整形ロジックをここに追加
+    id: item.id,
+    name: {
+      en: item.displayName.english,
+      ja: item.displayname.byLanguage.japanese,
+    },
+    description: {
+      en: item.description.Display.english,
+      ja: item.description.Display.byLanguage.japanese,
+    },
+    category: item.shop.caegory,
+    tier: item.shop.tier,  
+    }
+    
+
+  }));
+  return fotmattedData;
 }
 
 app.listen(port, () => {
