@@ -1,8 +1,10 @@
+
 :root {
   font-family: Inter, system-ui, sans-serif;
   color: #f4efe6;
   background: #10131a;
 }
+
 
 * {
   box-sizing: border-box;

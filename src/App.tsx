@@ -9,11 +9,13 @@ import "./styles.css";
 const isImageUrl = (value: string) => /^https?:\/\//.test(value);
 
 const renderIcon = (value: string, alt: string, className?: string) =>
+
   isImageUrl(value) ? (
     <img className={className} src={value} alt={alt} loading="lazy" />
   ) : (
     <span className={className}>{value}</span>
   );
+
 
 const copy = {
   en: {
@@ -282,6 +284,7 @@ export default function App() {
                             />
                             {effect.name[locale]}
                           </label>
+
                         ))}
                     </div>
                   )}
