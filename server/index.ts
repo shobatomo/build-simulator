@@ -79,7 +79,7 @@ interface RawItem {
   id?: string;
   slug?: string;
   displayName?: RawLocalizedText | null;
-  description?: RawLocalizedText | null;
+  descriptionDisplay?: RawLocalizedText | null;
   kind?: string;
   shop?: {
     category?: string | null;
@@ -179,7 +179,7 @@ function formatItemData(rawData: RawItemsResponse): Item[] {
             {
               id: `${item.id ?? item.slug}-active`,
               name: { en: 'Active effect', ja: 'アクティブ効果' },
-              description: localized(item.description, ''),
+              description: localized(item.descriptionDisplay, ''),
               stats: {},
               conditional: true,
               defaultEnabled: false,
