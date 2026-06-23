@@ -1,10 +1,118 @@
-import { useEffect, useMemo, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ButtonHTMLAttributes,
+  type CSSProperties,
+  type ReactNode,
+} from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { fetchDeadlockData } from "./api/deadlockApi";
-import type { Hero, Item, Locale, SelectedItem } from "./types";
+import type { AssetIcons, Hero, Item, Locale, SelectedItem } from "./types";
 
 import { calculateStats, statKeys, statLabels } from "./utils/calculateStats";
 import "./styles.css";
+
+type PopoverPosition = {
+  left: number;
+  top: number;
+  maxHeight: number;
+  placement: "above" | "below";
+};
+
+type PopoverButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
+  tooltip: ReactNode;
+};
+
+function PopoverButton({ tooltip, ...buttonProps }: PopoverButtonProps) {
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const popoverRef = useRef<HTMLDivElement>(null);
+  const [isOpen, setIsOpen] = useState(false);
+  const [position, setPosition] = useState<PopoverPosition>();
+
+  const updatePosition = useCallback(() => {
+    const button = buttonRef.current;
+    const popover = popoverRef.current;
+    if (!button || !popover) return;
+
+    const margin = 12;
+    const gap = 10;
+    const buttonRect = button.getBoundingClientRect();
+    const popoverRect = popover.getBoundingClientRect();
+    const viewportWidth = document.documentElement.clientWidth;
+    const viewportHeight = document.documentElement.clientHeight;
+    const spaceAbove = buttonRect.top - margin - gap;
+    const spaceBelow = viewportHeight - buttonRect.bottom - margin - gap;
+    const placement =
+      spaceAbove >= popoverRect.height || spaceAbove >= spaceBelow
+        ? "above"
+        : "below";
+    const halfWidth = popoverRect.width / 2;
+    const left = Math.min(
+      viewportWidth - margin - halfWidth,
+      Math.max(margin + halfWidth, buttonRect.left + buttonRect.width / 2),
+    );
+
+    setPosition({
+      left,
+      top: placement === "above" ? buttonRect.top - gap : buttonRect.bottom + gap,
+      maxHeight: Math.max(80, placement === "above" ? spaceAbove : spaceBelow),
+      placement,
+    });
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!isOpen) {
+      setPosition(undefined);
+      return;
+    }
+
+    updatePosition();
+    window.addEventListener("resize", updatePosition);
+    window.addEventListener("scroll", updatePosition, true);
+    return () => {
+      window.removeEventListener("resize", updatePosition);
+      window.removeEventListener("scroll", updatePosition, true);
+    };
+  }, [isOpen, updatePosition]);
+
+  const popoverStyle = position
+    ? ({
+        left: `${position.left}px`,
+        top: `${position.top}px`,
+        maxHeight: `${position.maxHeight}px`,
+      } satisfies CSSProperties)
+    : undefined;
+
+  return (
+    <>
+      <button
+        {...buttonProps}
+        ref={buttonRef}
+        onMouseEnter={() => setIsOpen(true)}
+        onMouseLeave={() => setIsOpen(false)}
+        onFocus={() => setIsOpen(true)}
+        onBlur={() => setIsOpen(false)}
+      />
+      {isOpen &&
+        createPortal(
+          <div
+            ref={popoverRef}
+            className={`hover-detail ${position?.placement === "below" ? "is-below" : "is-above"}`}
+            role="tooltip"
+            style={popoverStyle}
+          >
+            {tooltip}
+          </div>,
+          document.body,
+        )}
+    </>
+  );
+}
 
 const isImageUrl = (value: string) => /^https?:\/\//.test(value);
 
@@ -15,6 +123,27 @@ const renderIcon = (value: string, alt: string, className?: string) =>
     <span className={className}>{value}</span>
   );
 
+const renderItemPropertyTags = (item: Item, locale: Locale) =>
+  item.propertyTags?.length ? (
+    <div className="item-property-tags">
+      {item.propertyTags.map((property) => (
+        <span
+          className={`item-property-tag${property.emphasized ? " is-emphasized" : ""}`}
+          key={property.id}
+        >
+          {property.icon && (
+            <img className="property-icon" src={property.icon} alt="" />
+          )}
+          <span>{property.label[locale]}</span>
+          <strong>{property.value[locale]}</strong>
+          {property.condition?.[locale] && (
+            <em>{property.condition[locale]}</em>
+          )}
+        </span>
+      ))}
+    </div>
+  ) : null;
+
 const copy = {
   en: {
     title: "Deadlock Build Simulator",
@@ -24,6 +153,7 @@ const copy = {
     items: "Items",
     build: "Build",
     stats: "Stats & Parameters",
+    calculatedStats: "Build-adjusted stats",
     selectHero: "Select hero",
     conditional: "Conditional effects",
     empty: "Pick items from the left panel.",
@@ -41,6 +171,7 @@ const copy = {
     items: "アイテム",
     build: "ビルド",
     stats: "ステータス・パラメータ",
+    calculatedStats: "ビルド反映ステータス",
     selectHero: "ヒーロー選択",
     conditional: "条件付き効果",
     empty: "左側の一覧からアイテムを選択してください。",
@@ -56,6 +187,7 @@ export default function App() {
   const [locale, setLocale] = useState<Locale>("ja");
   const [heroes, setHeroes] = useState<Hero[]>([]);
   const [items, setItems] = useState<Item[]>([]);
+  const [assetIcons, setAssetIcons] = useState<AssetIcons>({ categories: {}, stats: {} });
   const [heroId, setHeroId] = useState<string>();
   const [level, setLevel] = useState(1);
   const [isHeroModalOpen, setHeroModalOpen] = useState(false);
@@ -74,9 +206,9 @@ export default function App() {
         items: apiItems,
         assets: apiAssets,
       } = await fetchDeadlockData();
-      void apiAssets;
       setHeroes(apiHeroes);
       setItems(apiItems);
+      setAssetIcons(apiAssets.icons);
       setHeroId((currentHeroId) => currentHeroId ?? apiHeroes[0]?.id);
       setSelectedItems((currentItems) =>
         currentItems.filter((selected) =>
@@ -165,27 +297,28 @@ export default function App() {
     <main className="app-shell">
       <section className="left-panel">
         <header className="top-bar">
-          <button
+          <PopoverButton
             className="hero-button icon-only-card"
             onClick={() => setHeroModalOpen(true)}
             aria-label={`${t.selectHero}: ${hero.name[locale]}`}
-            title={formatHeroDetails(hero)}
+            tooltip={
+              <>
+                <strong>{hero.name[locale]}</strong>
+                <small>{hero.role[locale]}</small>
+              </>
+            }
           >
             {renderIcon(hero.icon, hero.name[locale], "hero-icon")}
-            <span className="hover-detail" role="tooltip">
-              <strong>{hero.name[locale]}</strong>
-              <small>{hero.role[locale]}</small>
-            </span>
-          </button>
+          </PopoverButton>
           <label className="level-control">
             {t.level}
             <input
               type="number"
               min="1"
-              max="30"
+              max="36"
               value={level}
               onChange={(event) =>
-                setLevel(Math.min(30, Math.max(1, Number(event.target.value))))
+                setLevel(Math.min(36, Math.max(1, Number(event.target.value))))
               }
             />
           </label>
@@ -196,29 +329,40 @@ export default function App() {
         </div>
         <section className="item-grid" aria-label={t.items}>
           {items.map((item) => (
-            <button
+            <PopoverButton
               className="item-card icon-only-card"
               key={item.id}
               onClick={() => addItem(item.id)}
               aria-label={formatItemDetails(item)}
-              title={formatItemDetails(item)}
+              tooltip={
+                <>
+                  <strong>{item.name[locale]}</strong>
+                  <small>
+                    {item.slotType && assetIcons.categories[item.slotType] && (
+                      <img
+                        className="inline-icon"
+                        src={assetIcons.categories[item.slotType]}
+                        alt=""
+                      />
+                    )}
+                    {item.category[locale]} · {assetIcons.price && (
+                      <img className="inline-icon" src={assetIcons.price} alt="" />
+                    )}{item.price}
+                  </small>
+                  {renderItemPropertyTags(item, locale)}
+                  {item.effects.length > 0 && (
+                    <small>
+                      {item.effects
+                        .map((effect) => effect.description[locale])
+                        .filter(Boolean)
+                        .join(" / ")}
+                    </small>
+                  )}
+                </>
+              }
             >
               {renderIcon(item.icon, item.name[locale], "item-icon")}
-              <span className="hover-detail" role="tooltip">
-                <strong>{item.name[locale]}</strong>
-                <small>
-                  {item.category[locale]} · {item.price}
-                </small>
-                {item.effects.length > 0 && (
-                  <small>
-                    {item.effects
-                      .map((effect) => effect.description[locale])
-                      .filter(Boolean)
-                      .join(" / ")}
-                  </small>
-                )}
-              </span>
-            </button>
+            </PopoverButton>
           ))}
         </section>
       </section>
@@ -262,6 +406,7 @@ export default function App() {
                   >
                     <X size={16} />
                   </button>
+                  {renderItemPropertyTags(item, locale)}
                   {item.effects.filter((effect) => effect.conditional).length >
                     0 && (
                     <div className="effects">
@@ -292,16 +437,26 @@ export default function App() {
 
         <section className="stats-panel">
           <h2>{t.stats}</h2>
-          {statKeys.map((key) => (
-            <div className="stat-row" key={key}>
-              <span>{statLabels[key][locale]}</span>
-              <strong>
-                {Number.isInteger(stats[key])
-                  ? stats[key]
-                  : stats[key].toFixed(2)}
-              </strong>
+          <div className="calculated-stat-group">
+            <h3>{t.calculatedStats}</h3>
+            <div className="calculated-stat-grid">
+              {statKeys.map((key) => (
+                <div className="stat-row" key={key}>
+                  <span className="stat-label">
+                    {assetIcons.stats[key] && (
+                      <img className="stat-icon" src={assetIcons.stats[key]} alt="" />
+                    )}
+                    {statLabels[key][locale]}
+                  </span>
+                  <strong>
+                    {Number.isInteger(stats[key])
+                      ? stats[key]
+                      : stats[key].toFixed(2)}
+                  </strong>
+                </div>
+              ))}
             </div>
-          ))}
+          </div>
         </section>
       </section>
       {isHeroModalOpen && (
@@ -315,7 +470,7 @@ export default function App() {
             </div>
             <div className="hero-choice-grid">
               {heroes.map((candidate) => (
-                <button
+                <PopoverButton
                   className="hero-choice icon-only-card"
                   key={candidate.id}
                   onClick={() => {
@@ -323,18 +478,19 @@ export default function App() {
                     setHeroModalOpen(false);
                   }}
                   aria-label={formatHeroDetails(candidate)}
-                  title={formatHeroDetails(candidate)}
+                  tooltip={
+                    <>
+                      <strong>{candidate.name[locale]}</strong>
+                      <small>{candidate.role[locale]}</small>
+                    </>
+                  }
                 >
                   {renderIcon(
                     candidate.icon,
                     candidate.name[locale],
                     "hero-choice-icon",
                   )}
-                  <span className="hover-detail" role="tooltip">
-                    <strong>{candidate.name[locale]}</strong>
-                    <small>{candidate.role[locale]}</small>
-                  </span>
-                </button>
+                </PopoverButton>
               ))}
             </div>
           </div>

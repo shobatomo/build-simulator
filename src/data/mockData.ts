@@ -1,9 +1,12 @@
 import type { Hero, Item } from '../types';
 
+const additionalBaseStats = { lightMeleeDamage: 0, heavyMeleeDamage: 0, range: 0 };
+const additionalGrowthStats = { lightMeleeDamage: 0, heavyMeleeDamage: 0, range: 0 };
+
 export const heroes: Hero[] = [
-  { id: 'ivy', name: { en: 'Ivy', ja: 'アイビー' }, role: { en: 'Mobile support', ja: '機動支援' }, icon: '🦉', baseStats: { health: 550, weaponDamage: 26, fireRate: 4, spiritPower: 0, moveSpeed: 7.3, stamina: 3, cooldownReduction: 0 }, growthPerLevel: { health: 34, weaponDamage: 1.5, fireRate: 0.06, spiritPower: 0.8, moveSpeed: 0.01, stamina: 0, cooldownReduction: 0 } },
-  { id: 'abrams', name: { en: 'Abrams', ja: 'エイブラムス' }, role: { en: 'Frontline brawler', ja: '前線ファイター' }, icon: '🛡️', baseStats: { health: 650, weaponDamage: 29, fireRate: 3.4, spiritPower: 0, moveSpeed: 6.8, stamina: 3, cooldownReduction: 0 }, growthPerLevel: { health: 42, weaponDamage: 1.8, fireRate: 0.04, spiritPower: 0.65, moveSpeed: 0.01, stamina: 0, cooldownReduction: 0 } },
-  { id: 'haze', name: { en: 'Haze', ja: 'ヘイズ' }, role: { en: 'Weapon assassin', ja: '武器アサシン' }, icon: '🌫️', baseStats: { health: 500, weaponDamage: 28, fireRate: 4.5, spiritPower: 0, moveSpeed: 7.4, stamina: 3, cooldownReduction: 0 }, growthPerLevel: { health: 30, weaponDamage: 2.1, fireRate: 0.08, spiritPower: 0.55, moveSpeed: 0.01, stamina: 0, cooldownReduction: 0 } },
+  { id: 'ivy', name: { en: 'Ivy', ja: 'アイビー' }, role: { en: 'Mobile support', ja: '機動支援' }, icon: '🦉', baseStats: { ...additionalBaseStats, health: 550, weaponDamage: 26, fireRate: 4, spiritPower: 0, moveSpeed: 7.3, stamina: 3, cooldownReduction: 0 }, growthPerLevel: { ...additionalGrowthStats, health: 34, weaponDamage: 1.5, fireRate: 0.06, spiritPower: 0.8, moveSpeed: 0.01, stamina: 0, cooldownReduction: 0 } },
+  { id: 'abrams', name: { en: 'Abrams', ja: 'エイブラムス' }, role: { en: 'Frontline brawler', ja: '前線ファイター' }, icon: '🛡️', baseStats: { ...additionalBaseStats, health: 650, weaponDamage: 29, fireRate: 3.4, spiritPower: 0, moveSpeed: 6.8, stamina: 3, cooldownReduction: 0 }, growthPerLevel: { ...additionalGrowthStats, health: 42, weaponDamage: 1.8, fireRate: 0.04, spiritPower: 0.65, moveSpeed: 0.01, stamina: 0, cooldownReduction: 0 } },
+  { id: 'haze', name: { en: 'Haze', ja: 'ヘイズ' }, role: { en: 'Weapon assassin', ja: '武器アサシン' }, icon: '🌫️', baseStats: { ...additionalBaseStats, health: 500, weaponDamage: 28, fireRate: 4.5, spiritPower: 0, moveSpeed: 7.4, stamina: 3, cooldownReduction: 0 }, growthPerLevel: { ...additionalGrowthStats, health: 30, weaponDamage: 2.1, fireRate: 0.08, spiritPower: 0.55, moveSpeed: 0.01, stamina: 0, cooldownReduction: 0 } },
 ];
 
 export const items: Item[] = [

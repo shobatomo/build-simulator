@@ -1,4 +1,4 @@
-import type { Hero, Item } from '../types';
+import type { AssetIcons, Hero, Item } from '../types';
 
 interface ApiResponse<T> {
   data: T;
@@ -8,7 +8,10 @@ interface ApiResponse<T> {
 interface DeadlockDataResponse {
   heroes: Hero[];
   items: Item[];
-  assets: unknown;
+  assets: {
+    icons: AssetIcons;
+    source: string;
+  };
 }
 
 const getJson = async <T>(path: string): Promise<T> => {
