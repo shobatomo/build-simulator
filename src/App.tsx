@@ -6,6 +6,15 @@ import type { Hero, Item, Locale, SelectedItem } from "./types";
 import { calculateStats, statKeys, statLabels } from "./utils/calculateStats";
 import "./styles.css";
 
+const isImageUrl = (value: string) => /^https?:\/\//.test(value);
+
+const renderIcon = (value: string, alt: string, className?: string) =>
+    isImageUrl(value) ? (
+        <img className={className} src={value} alt={alt} loading="lazy" />
+    ) : (
+        <span className={className}>{value}</span>
+    );
+
 const copy = {
     en: {
         title: "Deadlock Build Simulator",
@@ -160,7 +169,7 @@ export default function App() {
                         onClick={() => setHeroModalOpen(true)}
                         aria-label={t.selectHero}
                     >
-                        <span>{hero.icon}</span>
+                        {renderIcon(hero.icon, hero.name[locale], "hero-icon")}
                         <strong>{hero.name[locale]}</strong>
                         <small>{hero.role[locale]}</small>
                     </button>
@@ -193,7 +202,7 @@ export default function App() {
                             key={item.id}
                             onClick={() => addItem(item.id)}
                         >
-                            <span className="item-icon">{item.icon}</span>
+                            {renderIcon(item.icon, item.name[locale], "item-icon")}
                             <strong>{item.name[locale]}</strong>
                             <small>
                                 {item.category[locale]} · {item.price}
@@ -228,7 +237,7 @@ export default function App() {
                                     key={selected.instanceId}
                                 >
                                     <div>
-                                        <span>{item.icon}</span>
+                                        {renderIcon(item.icon, item.name[locale], "build-item-icon")}
                                         <strong>{item.name[locale]}</strong>
                                     </div>
                                     <button
@@ -311,7 +320,7 @@ export default function App() {
                                     setHeroModalOpen(false);
                                 }}
                             >
-                                <span>{candidate.icon}</span>
+                                {renderIcon(candidate.icon, candidate.name[locale], "hero-choice-icon")}
                                 <div>
                                     <strong>{candidate.name[locale]}</strong>
                                     <small>{candidate.role[locale]}</small>
