@@ -12,7 +12,14 @@ import {
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { fetchDeadlockData } from "./api/deadlockApi";
-import type { AssetIcons, Hero, Item, Locale, SelectedItem } from "./types";
+import type {
+  AssetIcons,
+  Hero,
+  Item,
+  ItemPropertyTag,
+  Locale,
+  SelectedItem,
+} from "./types";
 
 import { calculateStats, statKeys, statLabels } from "./utils/calculateStats";
 import "./styles.css";
@@ -144,6 +151,111 @@ const renderItemPropertyTags = (item: Item, locale: Locale) =>
     </div>
   ) : null;
 
+const itemSlotOrder = ["weapon", "vitality", "spirit"] as const;
+const itemTierOrder = [1, 2, 3, 4] as const;
+
+const itemSlotLabels = {
+  weapon: { en: "Weapon", ja: "武器" },
+  vitality: { en: "Vitality", ja: "耐久" },
+  spirit: { en: "Spirit", ja: "スピリット" },
+} as const;
+
+const normalizeBonusLabel = (label: string) =>
+  label.replace(/\s+/g, "").replace(/／/g, "/");
+
+const bonusSummaryLabels = new Set(
+  [
+    "武器ダメージ",
+    "最大弾数",
+    "非戦闘時リジェネ",
+    "弾速",
+    "近接攻撃耐性",
+    "HP増加",
+    "ヘッドショット追加ダメージ",
+    "発射速度",
+    "スピリットパワー",
+    "スプリント速度",
+    "ダッシュ距離",
+    "移動速度",
+    "スロウ継続時間",
+    "スピリット耐性",
+    "スピリットライフスティール",
+    "弾薬耐性",
+    "スロウ耐性",
+    "スライディング距離",
+    "スタミナ回復",
+    "スタミナ",
+    "近接攻撃距離",
+    "近接強攻撃距離",
+    "近接ダメージ",
+    "近接攻撃追加ダメージ",
+    "近接強攻撃追加ダメージ",
+    "武器マルチショット",
+    "弾薬ライフスティール",
+    "足音可聴距離",
+    "アビリティ範囲",
+    "感電ダメージ",
+    "デバフ耐性",
+    "武器ズーム",
+    "ヘッドショット時の回復",
+    "ヘッドショット時の回復量",
+    "ヘッドショット時のスピリット耐性低下",
+    "出血ダメージ",
+    "回復阻害",
+    "奇襲状態の発射速度",
+    "奇襲状態のスピリットパワー",
+    "奇襲状態の近接ダメージ",
+    "HP吸収",
+    "サブ射撃武器ダメージ",
+    "ダメージ",
+    "スピリットダメージ低下",
+    "サイレンス継続時間",
+    "追加武器ダメージ",
+    "ブロック確率",
+    "プロック確率",
+    "跳弾対象",
+    "跳弾ダメージ",
+    "アビリティ継続時間",
+    "アビリティクールダウン短縮",
+    "近接攻撃時の回復量",
+    "パリィクールダウン",
+    "バリア",
+    "合計HPリジェネ",
+    "HPリジェネ",
+    "回復効果量",
+    "ソウル/分",
+    "反射弾薬ダメージ",
+    "反射スピリットダメージ",
+    "ヒーローキル時の回復",
+    "空中ジャンプ/ダッシュ距離",
+    "回復量",
+    "テレポート距離",
+    "空中制御",
+    "近接攻撃時の回復",
+    "インビジブル継続時間",
+    "インビジブル中移動速度",
+    "ダメージ低下",
+    "最大HPスティール",
+    "衝突ダメージ",
+    "デス無効継続時間",
+    "クールダウン短縮/ヒット",
+    "ヒット時効果無効確率",
+    "無効確率",
+    "アビリティ追加チャージ",
+    "発射速度ボーナス",
+    "スピリット耐性の吸収量",
+    "スピリットパワーの吸収量",
+    "パルスダメージ",
+    "現在のHPの追加割合ダメージ",
+    "現在HPの追加割合ダメージ",
+    "エンチャントライフスティール",
+    "アイテムクールダウン",
+    "アイテム クールダウン短縮",
+    "凍結継続時間",
+    "爆発ダメージ",
+  ].map(normalizeBonusLabel),
+);
+
 const copy = {
   en: {
     title: "Deadlock Build Simulator",
@@ -154,6 +266,9 @@ const copy = {
     build: "Build",
     stats: "Stats & Parameters",
     calculatedStats: "Build-adjusted stats",
+    itemBonuses: "Item bonuses & effects",
+    aggregatedBonuses: "Combined bonuses",
+    conditionalEffects: "Conditional stat bonuses",
     selectHero: "Select hero",
     conditional: "Conditional effects",
     empty: "Pick items from the left panel.",
@@ -172,6 +287,9 @@ const copy = {
     build: "ビルド",
     stats: "ステータス・パラメータ",
     calculatedStats: "ビルド反映ステータス",
+    itemBonuses: "アイテムによる上昇項目・付与効果",
+    aggregatedBonuses: "合算された上昇項目",
+    conditionalEffects: "条件付きステータス効果",
     selectHero: "ヒーロー選択",
     conditional: "条件付き効果",
     empty: "左側の一覧からアイテムを選択してください。",
@@ -232,6 +350,110 @@ export default function App() {
       hero ? calculateStats(hero, level, selectedItems, items) : undefined,
     [hero, level, selectedItems, items],
   );
+  const itemSections = useMemo(
+    () =>
+      itemSlotOrder.flatMap((slotType) =>
+        itemTierOrder
+          .map((tier) => ({
+            slotType,
+            tier,
+            items: items.filter(
+              (item) => item.slotType === slotType && item.tier === tier,
+            ),
+          }))
+          .filter((section) => section.items.length > 0),
+      ),
+    [items],
+  );
+  const sortedSelectedItems = useMemo(
+    () =>
+      selectedItems
+        .map((selected, selectionIndex) => ({
+          selected,
+          selectionIndex,
+          item: items.find((candidate) => candidate.id === selected.itemId),
+        }))
+        .sort((left, right) => {
+          const leftSlot = left.item?.slotType
+            ? itemSlotOrder.indexOf(left.item.slotType)
+            : itemSlotOrder.length;
+          const rightSlot = right.item?.slotType
+            ? itemSlotOrder.indexOf(right.item.slotType)
+            : itemSlotOrder.length;
+          return (
+            leftSlot - rightSlot ||
+            (left.item?.tier ?? Number.MAX_SAFE_INTEGER) -
+              (right.item?.tier ?? Number.MAX_SAFE_INTEGER) ||
+            left.selectionIndex - right.selectionIndex
+          );
+        })
+        .map(({ selected }) => selected),
+    [items, selectedItems],
+  );
+  const aggregatedItemProperties = useMemo(() => {
+    const aggregates = new Map<
+      string,
+      { property: ItemPropertyTag; total: number; contributors: Item[] }
+    >();
+
+    selectedItems.forEach((selected) => {
+      const item = items.find((candidate) => candidate.id === selected.itemId);
+      item?.propertyTags?.forEach((property) => {
+        // Hover shows every API tag; the build summary follows the explicit
+        // allowlist supplied for the "Combined bonuses" section.
+        if (!bonusSummaryLabels.has(normalizeBonusLabel(property.label.ja))) return;
+        if (property.numericValue == null) return;
+        if (
+          property.activationEffectId &&
+          !selected.enabledEffectIds.includes(property.activationEffectId)
+        ) {
+          return;
+        }
+        const key = [
+          property.id,
+          property.unit?.en ?? "",
+          property.condition?.en ?? "",
+        ].join("|");
+        const current = aggregates.get(key);
+        if (current) {
+          current.total += property.numericValue;
+          if (!current.contributors.some((contributor) => contributor.id === item.id)) {
+            current.contributors.push(item);
+          }
+        } else {
+          aggregates.set(key, {
+            property,
+            total: property.numericValue,
+            contributors: [item],
+          });
+        }
+      });
+    });
+
+    return [...aggregates.values()];
+  }, [items, selectedItems]);
+  const conditionalStatEffects = useMemo(
+    () =>
+      selectedItems.flatMap((selected) => {
+        const item = items.find((candidate) => candidate.id === selected.itemId);
+        return item
+          ? item.effects
+              .filter(
+                (effect) =>
+                  effect.conditional &&
+                  item.propertyTags?.some(
+                    (property) =>
+                      property.activationEffectId === effect.id &&
+                      bonusSummaryLabels.has(
+                        normalizeBonusLabel(property.label.ja),
+                      ),
+                  ),
+              )
+              .map((effect) => ({ selected, item, effect }))
+          : [];
+      }),
+    [items, selectedItems],
+  );
 
   const formatHeroDetails = (candidate: Hero) =>
     [candidate.name[locale], candidate.role[locale]]
@@ -241,19 +463,34 @@ export default function App() {
   const formatItemDetails = (item: Item) =>
     `${item.name[locale]} / ${item.category[locale]} / ${t.price}: ${item.price}`;
 
-  const addItem = (itemId: string) => {
+  const toggleItem = (itemId: string) => {
     const item = items.find((candidate) => candidate.id === itemId);
-    setSelectedItems((current) => [
-      ...current,
-      {
-        instanceId: crypto.randomUUID(),
-        itemId,
-        enabledEffectIds:
-          item?.effects
-            .filter((effect) => effect.defaultEnabled)
-            .map((effect) => effect.id) ?? [],
-      },
-    ]);
+    setSelectedItems((current) => {
+      if (current.some((selected) => selected.itemId === itemId)) {
+        return current.filter((selected) => selected.itemId !== itemId);
+      }
+      if (current.length >= 12) return current;
+      return [
+        ...current,
+        {
+          instanceId: crypto.randomUUID(),
+          itemId,
+          enabledEffectIds:
+            item?.effects
+              .filter((effect) => effect.defaultEnabled)
+              .map((effect) => effect.id) ?? [],
+        },
+      ];
+    });
+  };
+
+  const formatAggregatedValue = (
+    total: number,
+    property: ItemPropertyTag,
+  ) => {
+    const normalized = Number(total.toFixed(6));
+    const sign = normalized > 0 ? "+" : "";
+    return `${sign}${normalized}${property.unit?.[locale] ?? ""}`;
   };
 
   const toggleEffect = (instanceId: string, effectId: string) => {
@@ -327,44 +564,64 @@ export default function App() {
           <h1>{t.title}</h1>
           <p className="subtitle">{t.subtitle}</p>
         </div>
-        <section className="item-grid" aria-label={t.items}>
-          {items.map((item) => (
-            <PopoverButton
-              className="item-card icon-only-card"
-              key={item.id}
-              onClick={() => addItem(item.id)}
-              aria-label={formatItemDetails(item)}
-              tooltip={
-                <>
-                  <strong>{item.name[locale]}</strong>
-                  <small>
-                    {item.slotType && assetIcons.categories[item.slotType] && (
-                      <img
-                        className="inline-icon"
-                        src={assetIcons.categories[item.slotType]}
-                        alt=""
-                      />
-                    )}
-                    {item.category[locale]} · {assetIcons.price && (
-                      <img className="inline-icon" src={assetIcons.price} alt="" />
-                    )}{item.price}
-                  </small>
-                  {renderItemPropertyTags(item, locale)}
-                  {item.effects.length > 0 && (
-                    <small>
-                      {item.effects
-                        .map((effect) => effect.description[locale])
-                        .filter(Boolean)
-                        .join(" / ")}
-                    </small>
-                  )}
-                </>
-              }
+        <div className="item-sections" aria-label={t.items}>
+          {itemSections.map((section) => (
+            <section
+              className="item-section"
+              data-slot={section.slotType}
+              key={`${section.slotType}-${section.tier}`}
             >
-              {renderIcon(item.icon, item.name[locale], "item-icon")}
-            </PopoverButton>
+              <h2 className="item-section-heading">
+                {assetIcons.categories[section.slotType] && (
+                  <img
+                    src={assetIcons.categories[section.slotType]}
+                    alt=""
+                  />
+                )}
+                {itemSlotLabels[section.slotType][locale]} · Tier {section.tier}
+                <small>{section.items.length}</small>
+              </h2>
+              <div className="item-grid">
+                {section.items.map((item) => (
+                  <PopoverButton
+                    className={`item-card icon-only-card${selectedItems.some((selected) => selected.itemId === item.id) ? " is-selected" : ""}`}
+                    key={item.id}
+                    onClick={() => toggleItem(item.id)}
+                    aria-label={formatItemDetails(item)}
+                    aria-pressed={selectedItems.some(
+                      (selected) => selected.itemId === item.id,
+                    )}
+                    tooltip={
+                      <>
+                        <strong>{item.name[locale]}</strong>
+                        <small>
+                          {item.slotType && assetIcons.categories[item.slotType] && (
+                            <img
+                              className="inline-icon"
+                              src={assetIcons.categories[item.slotType]}
+                              alt=""
+                            />
+                          )}
+                          {item.category[locale]} · {assetIcons.price && (
+                            <img className="inline-icon" src={assetIcons.price} alt="" />
+                          )}{item.price}
+                        </small>
+                        {renderItemPropertyTags(item, locale)}
+                        {item.description?.[locale] && (
+                          <p className="item-description">
+                            {item.description[locale]}
+                          </p>
+                        )}
+                      </>
+                    }
+                  >
+                    {renderIcon(item.icon, item.name[locale], "item-icon")}
+                  </PopoverButton>
+                ))}
+              </div>
+            </section>
           ))}
-        </section>
+        </div>
       </section>
       <section className="right-panel">
         <div className="right-header">
@@ -377,17 +634,34 @@ export default function App() {
           </button>
         </div>
         <section className="build-list">
-          {selectedItems.length === 0 ? (
-            <p>{t.empty}</p>
-          ) : (
-            selectedItems.map((selected) => {
+          {Array.from({ length: 12 }, (_, index) => {
+            const selected = sortedSelectedItems[index];
+            if (!selected) {
+              return (
+                <div
+                  className="build-item build-slot-empty"
+                  key={`empty-${index}`}
+                  aria-hidden="true"
+                >
+                  <span>{index + 1}</span>
+                </div>
+              );
+            }
+
               const item = items.find(
                 (candidate) => candidate.id === selected.itemId,
               );
               if (!item) return null;
               return (
-                <article className="build-item" key={selected.instanceId}>
-                  <div>
+                <button
+                  type="button"
+                  className="build-item"
+                  key={selected.instanceId}
+                  title={item.name[locale]}
+                  aria-label={`${item.name[locale]} - remove`}
+                  onClick={() => toggleItem(item.id)}
+                >
+                  <div className="build-item-main">
                     {renderIcon(
                       item.icon,
                       item.name[locale],
@@ -395,44 +669,9 @@ export default function App() {
                     )}
                     <strong>{item.name[locale]}</strong>
                   </div>
-                  <button
-                    onClick={() =>
-                      setSelectedItems((current) =>
-                        current.filter(
-                          (entry) => entry.instanceId !== selected.instanceId,
-                        ),
-                      )
-                    }
-                  >
-                    <X size={16} />
-                  </button>
-                  {renderItemPropertyTags(item, locale)}
-                  {item.effects.filter((effect) => effect.conditional).length >
-                    0 && (
-                    <div className="effects">
-                      <small>{t.conditional}</small>
-                      {item.effects
-                        .filter((effect) => effect.conditional)
-                        .map((effect) => (
-                          <label key={effect.id}>
-                            <input
-                              type="checkbox"
-                              checked={selected.enabledEffectIds.includes(
-                                effect.id,
-                              )}
-                              onChange={() =>
-                                toggleEffect(selected.instanceId, effect.id)
-                              }
-                            />
-                            {effect.name[locale]}
-                          </label>
-                        ))}
-                    </div>
-                  )}
-                </article>
+                </button>
               );
-            })
-          )}
+            })}
         </section>
 
         <section className="stats-panel">
@@ -457,6 +696,77 @@ export default function App() {
               ))}
             </div>
           </div>
+          <section className="item-effects-summary">
+            <h3>{t.itemBonuses}</h3>
+            {aggregatedItemProperties.length > 0 && (
+              <div className="aggregated-bonuses">
+                <h4>{t.aggregatedBonuses}</h4>
+                <div className="aggregated-bonus-list">
+                  {aggregatedItemProperties.map(
+                    ({ property, total, contributors }) => (
+                      <div
+                        className={`aggregated-bonus${property.emphasized ? " is-emphasized" : ""}`}
+                        key={`${property.id}-${property.unit?.en ?? ""}-${property.condition?.en ?? ""}`}
+                      >
+                        <span>
+                          {property.icon && (
+                            <img src={property.icon} alt="" />
+                          )}
+                          {property.label[locale]}
+                          <span className="contributor-icons">
+                            {contributors.map((contributor) => (
+                              <span
+                                key={contributor.id}
+                                title={contributor.name[locale]}
+                              >
+                                {renderIcon(
+                                  contributor.icon,
+                                  "",
+                                  "contributor-icon",
+                                )}
+                              </span>
+                            ))}
+                          </span>
+                          {property.condition?.[locale] && (
+                            <small>{property.condition[locale]}</small>
+                          )}
+                        </span>
+                        <strong>
+                          {formatAggregatedValue(total, property)}
+                        </strong>
+                      </div>
+                    ),
+                  )}
+                </div>
+              </div>
+            )}
+            {conditionalStatEffects.length > 0 && (
+              <div className="conditional-effects">
+                <h4>{t.conditionalEffects}</h4>
+                {conditionalStatEffects.map(({ selected, item, effect }) => (
+                  <label
+                    className="conditional-effect-control"
+                    key={`${selected.instanceId}-${effect.id}`}
+                  >
+                    <span>
+                      <strong>{item.name[locale]}</strong>
+                      {renderIcon(
+                        item.icon,
+                        item.name[locale],
+                        "effect-item-icon",
+                      )}
+                    </span>
+                    <input
+                      type="checkbox"
+                      checked={selected.enabledEffectIds.includes(effect.id)}
+                      onChange={() => toggleEffect(selected.instanceId, effect.id)}
+                    />
+                    {effect.name[locale]}
+                  </label>
+                ))}
+              </div>
+            )}
+          </section>
         </section>
       </section>
       {isHeroModalOpen && (

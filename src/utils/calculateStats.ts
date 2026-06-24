@@ -50,6 +50,7 @@ export const calculateStats = (hero: Hero, level: number, selectedItems: Selecte
     item.effects.forEach((effect) => {
       if (!effect.conditional || selected.enabledEffectIds.includes(effect.id)) {
         addStats(totals, effect.stats);
+        addStats(percentageBonuses, effect.percentageStats ?? {});
       }
     });
   });

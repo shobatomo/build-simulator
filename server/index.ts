@@ -8,6 +8,7 @@ import type {
   ItemPropertyTag,
   LocalizedText,
   StatBlock,
+  StatKey,
 } from '../src/types.js';
 
 const app = express();
@@ -221,10 +222,57 @@ const formatHeroData = (englishHeroes: RawHero[], japaneseHeroes: RawHero[], all
   });
 };
 
-const mapItemStats = (properties?: RawItem['properties']): Partial<StatBlock> => {
+const isExplicitlyConditionalProperty = (property?: RawItemProperty) =>
+  property?.usage_flags?.includes('ConditionallyApplied') === true ||
+  Boolean(property?.conditional);
+
+const isConditionalProperty = (item: RawItem, property?: RawItemProperty) => {
+  // Valve marks some innate bonuses as ConditionallyApplied internally even
+  // though they are always granted by owning the item (for example Echo Shard's
+  // innate fire rate). The tooltip section is the authoritative UI behavior.
+  if (property?.tooltip_section === 'innate') return false;
+  if (item.is_active_item === true && property?.tooltip_section === 'active') return true;
+  return isExplicitlyConditionalProperty(property);
+};
+
+const itemPropertyStatKeys: Partial<Record<string, StatKey>> = {
+  MaxHealth: 'health',
+  BonusHealth: 'health',
+  BonusBaseHealth: 'health',
+  BonusHealthPercent: 'health',
+  MaxHealthPercent: 'health',
+  BaseAttackDamagePercent: 'weaponDamage',
+  WeaponPower: 'weaponDamage',
+  BonusFireRate: 'fireRate',
+  FireRateBonus: 'fireRate',
+  FireRatePercent: 'fireRate',
+  TechPower: 'spiritPower',
+  TechPowerPercent: 'spiritPower',
+  BonusMoveSpeed: 'moveSpeed',
+  BonusSprintSpeed: 'moveSpeed',
+  MoveSpeed: 'moveSpeed',
+  BonusMoveSpeedPercent: 'moveSpeed',
+  MoveSpeedPercent: 'moveSpeed',
+  BonusStamina: 'stamina',
+  Stamina: 'stamina',
+  BonusStaminaPercent: 'stamina',
+  StaminaPercent: 'stamina',
+  CooldownReduction: 'cooldownReduction',
+  TechCooldownReduction: 'cooldownReduction',
+  BonusHeavyMeleeDamage: 'heavyMeleeDamage',
+  BonusMeleeDamagePercent: 'lightMeleeDamage',
+  BonusAttackRangePercent: 'range',
+};
+
+const mapItemStats = (
+  properties?: RawItem['properties'],
+  shouldInclude: (property?: RawItemProperty) => boolean = () => true,
+): Partial<StatBlock> => {
   const get = (...keys: string[]) => {
     for (const key of keys) {
-      const value = parseNumber(properties?.[key]?.value);
+      const property = properties?.[key];
+      if (!shouldInclude(property)) continue;
+      const value = parseNumber(property?.value);
       if (value !== 0) return value;
     }
     return 0;
@@ -240,10 +288,14 @@ const mapItemStats = (properties?: RawItem['properties']): Partial<StatBlock> =>
   };
 };
 
-const mapItemPercentageStats = (properties?: RawItem['properties']): Partial<StatBlock> => {
+const mapItemPercentageStats = (
+  properties?: RawItem['properties'],
+  shouldInclude: (property?: RawItemProperty) => boolean = () => true,
+): Partial<StatBlock> => {
   const get = (...keys: string[]) => {
     for (const key of keys) {
       const property = properties?.[key];
+      if (!shouldInclude(property)) continue;
       const value = parseNumber(property?.value);
       if (value !== 0 && (property?.postfix === '%' || key.toLowerCase().includes('percent'))) return value;
     }
@@ -317,6 +369,7 @@ const itemPropertyTags = (english: RawItem, japanese: RawItem): ItemPropertyTag[
   const emphasizedNames = emphasizedPropertyNames(english);
   return tooltipPropertyNames(english)
     .flatMap((name): ItemPropertyTag[] => {
+      const statKey = itemPropertyStatKeys[name];
       const englishProperty = english.properties?.[name];
       const japaneseProperty = japanese.properties?.[name] ?? englishProperty;
       const englishValue = propertyValue(englishProperty);
@@ -332,6 +385,20 @@ const itemPropertyTags = (english: RawItem, japanese: RawItem): ItemPropertyTag[
           ja: japaneseProperty?.label ?? englishProperty.label,
         },
         value: { en: englishValue, ja: japaneseValue },
+        numericValue: parseNumber(englishProperty.value),
+        unit:
+          englishProperty.postfix || japaneseProperty?.postfix
+            ? {
+                en: englishProperty.postfix ?? '',
+                ja: japaneseProperty?.postfix ?? englishProperty.postfix ?? '',
+              }
+            : undefined,
+        statKey,
+        // Innate properties remain visible. Only explicitly conditional tags,
+        // plus the active section of an active item, follow the checkbox.
+        activationEffectId: isConditionalProperty(english, englishProperty)
+          ? `${english.id}-description`
+          : undefined,
         condition:
           englishCondition || japaneseCondition
             ? { en: englishCondition, ja: japaneseCondition }
@@ -376,11 +443,25 @@ const formatItemData = (englishItems: RawItem[], japaneseItems: RawItem[]): Item
         en: itemDescription(item),
         ja: itemDescription(japanese) || itemDescription(item),
       };
+      const isConditional = (property?: RawItemProperty) =>
+        isConditionalProperty(item, property);
+      const conditionalStats = mapItemStats(item.properties, isConditional);
+      const conditionalPercentageStats = mapItemPercentageStats(
+        item.properties,
+        isConditional,
+      );
+      const hasConditionalProperties = Object.values(item.properties ?? {}).some(
+        isConditional,
+      );
+      const hasConditionalStats = [conditionalStats, conditionalPercentageStats].some(
+        (stats) => Object.values(stats).some((value) => value !== 0),
+      );
       return {
         id: String(item.id),
         name: { en: item.name, ja: japanese.name ?? item.name },
         category: { en: `${labels.en}${tier}`, ja: `${labels.ja}${japaneseTier}` },
         slotType: item.item_slot_type,
+        tier: item.item_tier ?? undefined,
         price: item.cost ?? 0,
         icon:
           item.shop_image_small_webp ??
@@ -390,19 +471,26 @@ const formatItemData = (englishItems: RawItem[], japaneseItems: RawItem[]): Item
           item.image_webp ??
           item.image ??
           '📦',
-        stats: mapItemStats(item.properties),
-        percentageStats: mapItemPercentageStats(item.properties),
+        description,
+        stats: mapItemStats(item.properties, (property) => !isConditional(property)),
+        percentageStats: mapItemPercentageStats(
+          item.properties,
+          (property) => !isConditional(property),
+        ),
         propertyTags: itemPropertyTags(item, japanese),
-        effects: description.en || description.ja
+        effects: description.en || description.ja || hasConditionalStats
           ? [
               {
                 id: `${item.id}-description`,
                 name: item.is_active_item
                   ? { en: 'Active effect', ja: 'アクティブ効果' }
+                  : hasConditionalProperties
+                    ? { en: 'Conditional bonus', ja: '条件付きボーナス' }
                   : { en: 'Passive effect', ja: 'パッシブ効果' },
                 description,
-                stats: {},
-                conditional: item.is_active_item === true,
+                stats: conditionalStats,
+                percentageStats: conditionalPercentageStats,
+                conditional: item.is_active_item === true || hasConditionalProperties,
                 defaultEnabled: false,
               },
             ]

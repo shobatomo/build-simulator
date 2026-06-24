@@ -27,6 +27,7 @@ export interface ItemEffect {
   name: LocalizedText;
   description: LocalizedText;
   stats: Partial<StatBlock>;
+  percentageStats?: Partial<StatBlock>;
   conditional: boolean;
   defaultEnabled: boolean;
 }
@@ -35,6 +36,10 @@ export interface ItemPropertyTag {
   id: string;
   label: LocalizedText;
   value: LocalizedText;
+  numericValue?: number;
+  unit?: LocalizedText;
+  statKey?: StatKey;
+  activationEffectId?: string;
   condition?: LocalizedText;
   icon?: string;
   emphasized: boolean;
@@ -45,8 +50,10 @@ export interface Item {
   name: LocalizedText;
   category: LocalizedText;
   slotType?: 'weapon' | 'vitality' | 'spirit';
+  tier?: number;
   price: number;
   icon: string;
+  description?: LocalizedText;
   stats: Partial<StatBlock>;
   percentageStats?: Partial<StatBlock>;
   propertyTags?: ItemPropertyTag[];
