@@ -6,20 +6,21 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "typescript": "latest",
+    "@supabase/supabase-js": "^2.108.2",
+    "lucide-react": "latest",
+    "next": "latest",
     "react": "latest",
     "react-dom": "latest",
-    "lucide-react": "latest",
-    "next": "latest"
+    "typescript": "latest"
   },
   "devDependencies": {
+    "@eslint/js": "latest",
+    "@types/node": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
-    "@types/node": "latest",
     "eslint": "latest",
-    "@eslint/js": "latest",
-    "typescript-eslint": "latest",
-    "globals": "latest"
+    "globals": "latest",
+    "typescript-eslint": "latest"
   },
   "engines": {
     "node": ">=20"

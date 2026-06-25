@@ -1,12 +1,11 @@
 import { NextResponse } from 'next/server';
-import { loadDeadlockData } from '../_lib/deadlockData';
+import { loadSupabaseItems } from '../_lib/supabaseDeadlock';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    const data = await loadDeadlockData();
-    return NextResponse.json({ data: data.items, source: data.metadata.source });
+    return NextResponse.json(await loadSupabaseItems());
   } catch (error) {
     console.error('Deadlock API item fetch failed:', error);
     return NextResponse.json(

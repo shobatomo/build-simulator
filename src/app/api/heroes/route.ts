@@ -1,12 +1,11 @@
 import { NextResponse } from 'next/server';
-import { loadDeadlockData } from '../_lib/deadlockData';
+import { loadSupabaseHeroes } from '../_lib/supabaseDeadlock';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    const data = await loadDeadlockData();
-    return NextResponse.json({ data: data.heroes, source: data.metadata.source });
+    return NextResponse.json(await loadSupabaseHeroes());
   } catch (error) {
     console.error('Deadlock API hero fetch failed:', error);
     return NextResponse.json(

@@ -9,9 +9,9 @@ import type {
 } from '../../../types';
 
 // Base URL and paths are defined by server/api-1.json (OpenAPI).
-const DEADLOCK_API_BASE = 'https://api.deadlock-api.com/v1/assets';
+export const DEADLOCK_API_BASE = process.env.DEADLOCK_API_BASE_URL ?? 'https://api.deadlock-api.com/v1/assets';
 
-type JsonRecord = Record<string, unknown>;
+export type JsonRecord = Record<string, unknown>;
 
 interface RawHeroDescription {
   lore?: string | null;
@@ -19,7 +19,7 @@ interface RawHeroDescription {
   role?: string | null;
 }
 
-interface RawHero {
+export interface RawHero {
   id: number;
   class_name: string;
   name: string;
@@ -64,7 +64,7 @@ interface RawWeaponInfo {
   range?: string | number | null;
 }
 
-interface RawItem {
+export interface RawItem {
   id: number;
   class_name: string;
   name: string;
@@ -76,6 +76,8 @@ interface RawItem {
   shopable?: boolean;
   cost?: number | null;
   hero?: number | null;
+  heroes?: number[] | null;
+  ability_type?: string | null;
   description?: RawItemDescription | null;
   properties?: Record<string, RawItemProperty | undefined> | null;
   tooltip_sections?: Array<{
@@ -144,7 +146,7 @@ const stripDescriptionTags = (value: string) =>
     .replace(/\n{3,}/g, '\n\n')
     .trim();
 
-const fetchAsset = async <T>(path: string): Promise<T> => {
+export const fetchAsset = async <T>(path: string): Promise<T> => {
   const response = await fetch(`${DEADLOCK_API_BASE}/${path}`);
   if (!response.ok) {
     throw new Error(`${path}: ${response.status} ${response.statusText}`);
@@ -185,7 +187,7 @@ const heroGrowthStats = (hero: RawHero, weapon?: RawItem): StatBlock => {
   };
 };
 
-const formatHeroData = (englishHeroes: RawHero[], japaneseHeroes: RawHero[], allItems: RawItem[]): Hero[] => {
+export const formatHeroData = (englishHeroes: RawHero[], japaneseHeroes: RawHero[], allItems: RawItem[]): Hero[] => {
   const japaneseById = new Map(japaneseHeroes.map((hero) => [hero.id, hero]));
   return englishHeroes.map((hero) => {
     const japanese = japaneseById.get(hero.id);
@@ -419,7 +421,7 @@ const categoryLabels: Record<'weapon' | 'vitality' | 'spirit', LocalizedText> = 
   spirit: { en: 'Spirit', ja: 'スピリット' },
 };
 
-const formatItemData = (englishItems: RawItem[], japaneseItems: RawItem[]): Item[] => {
+export const formatItemData = (englishItems: RawItem[], japaneseItems: RawItem[]): Item[] => {
   const japaneseById = new Map(japaneseItems.map((item) => [item.id, item]));
   return englishItems
     .filter(
@@ -500,7 +502,7 @@ const nestedString = (root: JsonRecord, path: string[]) => {
   return typeof current === 'string' ? current : undefined;
 };
 
-const selectAssetIcons = (icons: JsonRecord): AssetIcons => ({
+export const selectAssetIcons = (icons: JsonRecord): AssetIcons => ({
   price: nestedString(icons, ['gold.svg']),
   categories: {
     weapon: nestedString(icons, ['builds', 'citadel_build_tag_weapon.svg']),
@@ -518,7 +520,7 @@ const selectAssetIcons = (icons: JsonRecord): AssetIcons => ({
   },
 });
 
-export const loadDeadlockData = async () => {
+export const loadDeadlockRawAssets = async () => {
   const [englishHeroes, japaneseHeroes, englishItems, japaneseItems, icons] = await Promise.all([
     fetchAsset<RawHero[]>('heroes?language=english&only_active=true'),
     fetchAsset<RawHero[]>('heroes?language=japanese&only_active=true'),
@@ -527,7 +529,16 @@ export const loadDeadlockData = async () => {
     fetchAsset<JsonRecord>('icons'),
   ]);
 
-  return {
+  return { englishHeroes, japaneseHeroes, englishItems, japaneseItems, icons };
+};
+
+export const formatDeadlockData = ({
+  englishHeroes,
+  japaneseHeroes,
+  englishItems,
+  japaneseItems,
+  icons,
+}: Awaited<ReturnType<typeof loadDeadlockRawAssets>>) => ({
     heroes: formatHeroData(englishHeroes, japaneseHeroes, englishItems),
     items: formatItemData(englishItems, japaneseItems),
     assets: {
@@ -538,6 +549,6 @@ export const loadDeadlockData = async () => {
       source: DEADLOCK_API_BASE,
       endpoints: ['heroes', 'items', 'icons'],
     },
-  };
-};
+  });
 
+export const loadDeadlockData = async () => formatDeadlockData(await loadDeadlockRawAssets());
