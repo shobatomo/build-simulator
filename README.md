@@ -1,11 +1,7 @@
 # Deadlock Build Simulator
 
-React/Vite + Express MVP for a Deadlock MOBA build simulator. The frontend requests hero and item data from the Express API. The API currently serves mock data while keeping the model close to a future Supabase-backed implementation.
+Next.js App Router MVP for a Deadlock MOBA build simulator. The frontend requests hero and item data from Next.js App Router API routes. The API keeps the model close to a future Supabase-backed implementation.
 
-
-## Why React/Vite + Express
-
-This project keeps the frontend and Node API separate because it is easier to learn step-by-step: Vite serves React during development, Express exposes `/api/*`, and Vite proxies API requests to Express. Next.js would reduce Vercel deployment wiring, but it hides more concepts behind framework conventions.
 
 ## Data operations recommendation
 
@@ -14,7 +10,7 @@ For production, prefer a scheduled ingestion job rather than fetching game data 
 1. A weekly cron job calls the trusted Deadlock data API.
 2. The job normalizes heroes, items, stat keys, conditional effects, and localized labels.
 3. The job upserts into Supabase tables (`heroes`, `items`, `item_effects`, `sync_runs`).
-4. The app reads from Supabase through the Node API.
+4. The app reads from Supabase through App Router API routes.
 5. Keep manual override fields in Supabase for data that the external API does not expose cleanly.
 
 This is safer than live browser fetches because it avoids rate limits, keeps API keys private, and lets the app continue working if the external API is temporarily unavailable.
@@ -26,8 +22,8 @@ npm install
 npm run dev
 ```
 
-- React: http://localhost:5173
-- Express API: http://localhost:3001/api/health
+- App: http://localhost:3000
+- API health: http://localhost:3000/api/health
 
 ## MVP scope
 

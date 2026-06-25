@@ -1,3 +1,5 @@
+"use client";
+
 import {
   useCallback,
   useEffect,
@@ -22,7 +24,6 @@ import type {
 } from "./types";
 
 import { calculateStats, statKeys, statLabels } from "./utils/calculateStats";
-import "./styles.css";
 
 type PopoverPosition = {
   left: number;
