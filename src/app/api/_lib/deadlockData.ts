@@ -1,6 +1,3 @@
-import cors from 'cors';
-import 'dotenv/config';
-import express from 'express';
 import type {
   AssetIcons,
   Hero,
@@ -9,15 +6,10 @@ import type {
   LocalizedText,
   StatBlock,
   StatKey,
-} from '../src/types.js';
+} from '../../../types';
 
-const app = express();
-const port = Number(process.env.PORT ?? 3001);
 // Base URL and paths are defined by server/api-1.json (OpenAPI).
 const DEADLOCK_API_BASE = 'https://api.deadlock-api.com/v1/assets';
-
-app.use(cors());
-app.use(express.json());
 
 type JsonRecord = Record<string, unknown>;
 
@@ -526,7 +518,7 @@ const selectAssetIcons = (icons: JsonRecord): AssetIcons => ({
   },
 });
 
-const loadDeadlockData = async () => {
+export const loadDeadlockData = async () => {
   const [englishHeroes, japaneseHeroes, englishItems, japaneseItems, icons] = await Promise.all([
     fetchAsset<RawHero[]>('heroes?language=english&only_active=true'),
     fetchAsset<RawHero[]>('heroes?language=japanese&only_active=true'),
@@ -549,19 +541,3 @@ const loadDeadlockData = async () => {
   };
 };
 
-app.get('/api/health', (_request, response) => response.json({ ok: true }));
-
-app.get('/api/sync/deadlock-data-first', async (_request, response) => {
-  try {
-    response.json(await loadDeadlockData());
-  } catch (error) {
-    console.error('Deadlock API data fetch failed:', error);
-    response.status(502).json({
-      error: `Deadlock APIからのデータ取得に失敗しました。${error instanceof Error ? error.message : String(error)}`,
-    });
-  }
-});
-
-app.listen(port, () => {
-  console.log(`Deadlock build simulator API listening on http://localhost:${port}`);
-});

@@ -4,3 +4,5 @@ dist
 .DS_Store
 *.tsbuildinfo
 node_modules/.tmp
+
+.next
