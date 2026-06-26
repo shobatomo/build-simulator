@@ -3,8 +3,9 @@ import { Analytics } from "@vercel/analytics/next";
 import "../styles.css";
 
 export const metadata: Metadata = {
-    title: "Deadlock Build Simulator",
-    description: "Deadlock MOBA build simulator",
+    title: "Deadlock Build Ledger",
+    description:
+        "An occult companion tool for planning Deadlock builds with a noir, Art Deco atmosphere.",
 };
 
 export default function RootLayout({
