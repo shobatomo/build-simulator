@@ -259,44 +259,52 @@ const bonusSummaryLabels = new Set(
 
 const copy = {
   en: {
+    eyebrow: "Curiosity Shop field desk",
     title: "Deadlock Build Simulator",
     subtitle:
-      "Hero and item data is loaded from the Node API. The API can later read Supabase data refreshed by a weekly external sync.",
+      "Plan your next patron pact before the zipline drops: pick a hero, stack Souls into Weapon, Vitality, and Spirit items, then check how the full build changes your fight-ready stats.",
+    helper:
+      "Use it as a quick sidekick for lane experiments, power-spike checks, and comparing conditional item effects without breaking your in-match flow.",
+    pills: ["Hero-first planning", "12-slot build layout", "Live stat readout"],
     level: "Level",
-    items: "Items",
-    build: "Build",
-    stats: "Stats & Parameters",
+    items: "Shop inventory",
+    build: "Current Build",
+    stats: "Combat Readout",
     calculatedStats: "Build-adjusted stats",
     itemBonuses: "Item bonuses & effects",
     aggregatedBonuses: "Combined bonuses",
     conditionalEffects: "Conditional stat bonuses",
-    selectHero: "Select hero",
+    selectHero: "Choose your hero",
     conditional: "Conditional effects",
-    empty: "Pick items from the left panel.",
+    empty: "Pick items from the shop inventory.",
     lang: "日本語",
-    loading: "Loading heroes and items from API...",
-    error: "Could not load API data.",
+    loading: "Opening the Curiosity Shop ledger...",
+    error: "The shop ledger could not be loaded.",
     retry: "Retry",
     price: "Price",
   },
   ja: {
+    eyebrow: "Curiosity Shop 作戦デスク",
     title: "Deadlock ビルドシミュレーター",
     subtitle:
-      "ヒーローとアイテム情報はNode APIから取得します。将来は外部APIから週次同期したSupabaseデータをAPIが返す想定です。",
+      "ジップラインで出撃する前に、ヒーローとソウルの使い道を素早く設計。武器・耐久・スピリットの買い物を組み合わせ、完成形のステータスを確認できます。",
+    helper:
+      "レーン戦の初手、パワースパイク、条件付きアイテム効果の比較を、試合中の判断を邪魔しない速度でサポートします。",
+    pills: ["ヒーロー起点で設計", "12枠のビルド構成", "即時ステータス反映"],
     level: "レベル",
-    items: "アイテム",
-    build: "ビルド",
-    stats: "ステータス・パラメータ",
+    items: "ショップ在庫",
+    build: "現在のビルド",
+    stats: "戦闘ステータス",
     calculatedStats: "ビルド反映ステータス",
     itemBonuses: "アイテムによる上昇項目・付与効果",
     aggregatedBonuses: "合算された上昇項目",
     conditionalEffects: "条件付きステータス効果",
-    selectHero: "ヒーロー選択",
+    selectHero: "ヒーローを選ぶ",
     conditional: "条件付き効果",
-    empty: "左側の一覧からアイテムを選択してください。",
+    empty: "ショップ在庫からアイテムを選択してください。",
     lang: "English",
-    loading: "APIからヒーローとアイテムを読み込んでいます...",
-    error: "APIデータを読み込めませんでした。",
+    loading: "Curiosity Shop の台帳を開いています...",
+    error: "ショップ台帳を読み込めませんでした。",
     retry: "再試行",
     price: "価格",
   },
@@ -535,19 +543,30 @@ export default function App() {
     <main className="app-shell">
       <section className="left-panel">
         <header className="top-bar">
-          <PopoverButton
-            className="hero-button icon-only-card"
-            onClick={() => setHeroModalOpen(true)}
-            aria-label={`${t.selectHero}: ${hero.name[locale]}`}
-            tooltip={
-              <>
-                <strong>{hero.name[locale]}</strong>
-                <small>{hero.role[locale]}</small>
-              </>
-            }
-          >
-            {renderIcon(hero.icon, hero.name[locale], "hero-icon")}
-          </PopoverButton>
+          <div className="hero-selector">
+            <PopoverButton
+              className="hero-button icon-only-card"
+              onClick={() => setHeroModalOpen(true)}
+              aria-label={`${t.selectHero}: ${hero.name[locale]}`}
+              tooltip={
+                <>
+                  <strong>{hero.name[locale]}</strong>
+                  <small>{hero.role[locale]}</small>
+                </>
+              }
+            >
+              {renderIcon(hero.icon, hero.name[locale], "hero-icon")}
+            </PopoverButton>
+            <button
+              className="hero-selector-copy"
+              type="button"
+              onClick={() => setHeroModalOpen(true)}
+              aria-label={`${t.selectHero}: ${hero.name[locale]}`}
+            >
+              <span>{t.selectHero}</span>
+              <strong>{hero.name[locale]}</strong>
+            </button>
+          </div>
           <label className="level-control">
             {t.level}
             <input
@@ -561,9 +580,16 @@ export default function App() {
             />
           </label>
         </header>
-        <div>
+        <div className="intro-card">
+          <p className="eyebrow">{t.eyebrow}</p>
           <h1>{t.title}</h1>
           <p className="subtitle">{t.subtitle}</p>
+          <p className="intro-helper">{t.helper}</p>
+          <div className="intro-pills" aria-label={t.items}>
+            {t.pills.map((pill) => (
+              <span key={pill}>{pill}</span>
+            ))}
+          </div>
         </div>
         <div className="item-sections" aria-label={t.items}>
           {itemSections.map((section) => (

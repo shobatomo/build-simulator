@@ -7,6 +7,7 @@ import {
   selectAssetIcons,
   type JsonRecord,
   type RawHero,
+  SERVER_HTTP_HEADERS,
   type RawItem,
 } from './deadlockData';
 
@@ -52,6 +53,9 @@ export const getSupabaseServerClient = () => {
       auth: {
         persistSession: false,
         autoRefreshToken: false,
+      },
+      global: {
+        headers: SERVER_HTTP_HEADERS,
       },
     },
   );

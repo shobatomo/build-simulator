@@ -13,6 +13,10 @@ export const DEADLOCK_API_BASE = process.env.DEADLOCK_API_BASE_URL ?? 'https://a
 
 export type JsonRecord = Record<string, unknown>;
 
+export const SERVER_HTTP_HEADERS = {
+  'X-App-Name': 'deadlock-build-simulator',
+} as const satisfies Record<string, string>;
+
 interface RawHeroDescription {
   lore?: string | null;
   playstyle?: string | null;
@@ -147,7 +151,9 @@ const stripDescriptionTags = (value: string) =>
     .trim();
 
 export const fetchAsset = async <T>(path: string): Promise<T> => {
-  const response = await fetch(`${DEADLOCK_API_BASE}/${path}`);
+  const response = await fetch(`${DEADLOCK_API_BASE}/${path}`, {
+    headers: SERVER_HTTP_HEADERS,
+  });
   if (!response.ok) {
     throw new Error(`${path}: ${response.status} ${response.statusText}`);
   }
