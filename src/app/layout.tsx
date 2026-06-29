@@ -3,9 +3,9 @@ import { Analytics } from "@vercel/analytics/next";
 import "../styles.css";
 
 export const metadata: Metadata = {
-    title: "Deadlock Build Ledger",
+    title: "Deadlock Build Simulator",
     description:
-        "An occult companion tool for planning Deadlock builds with a noir, Art Deco atmosphere.",
+        "ヒーロー、ブーン、アイテムを選び、属性とアイテム効果を確認できるDeadlockビルドシミュレーター。",
 };
 
 export default function RootLayout({

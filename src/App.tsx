@@ -165,12 +165,32 @@ const renderItemPropertyTags = (item: Item, locale: Locale) =>
         </div>
     ) : null;
 
+const getItemEffectType = (item: Item, locale: Locale) => {
+    const effect = item.effects[0];
+    if (!effect) return undefined;
+
+    const effectName = `${effect.name.en} ${effect.name.ja}`.toLowerCase();
+    const type =
+        effectName.includes("active") || effectName.includes("アクティブ")
+            ? "active"
+            : effect.conditional
+              ? "conditional"
+              : "passive";
+    const labels = {
+        active: { en: "Active", ja: "アクティブ" },
+        passive: { en: "Passive", ja: "パッシブ" },
+        conditional: { en: "Conditional", ja: "条件付き" },
+    } as const;
+
+    return labels[type][locale];
+};
+
 const itemSlotOrder = ["weapon", "vitality", "spirit"] as const;
 const itemTierOrder = [1, 2, 3, 4] as const;
 
 const itemSlotLabels = {
     weapon: { en: "Weapon", ja: "武器" },
-    vitality: { en: "Vitality", ja: "耐久" },
+    vitality: { en: "Vitality", ja: "バイタリティ" },
     spirit: { en: "Spirit", ja: "スピリット" },
 } as const;
 
@@ -272,56 +292,52 @@ const bonusSummaryLabels = new Set(
 
 const copy = {
     en: {
-        eyebrow: "Investigator's field ledger",
-        title: "Deadlock Build Ledger",
+        eyebrow: "DEADLOCK // BUILD SIMULATOR",
+        title: "Build Simulator",
         subtitle:
-            "Prepare the next inquiry before the rails hum: choose a hero, assign Souls to Weapon, Vitality, and Spirit purchases, then read how the completed build reshapes your readiness in the field.",
-        helper: "Use this companion for rapid lane experiments, power-spike checks, and the comparison of conditional effects without losing sight of the mission.",
-        pills: [
-            "Hero-first planning",
-            "12-slot field ledger",
-            "Immediate combat readout",
-        ],
-        level: "Level",
-        items: "Archive inventory",
-        build: "Current Ledger",
-        stats: "Field Readout",
-        calculatedStats: "Build-adjusted readout",
-        itemBonuses: "Item bonuses & rites",
-        aggregatedBonuses: "Combined effects",
-        conditionalEffects: "Conditional blessings",
-        selectHero: "Choose your operative",
+            "Select a hero, boon, and items to review updated attributes and item effects.",
+        helper: "",
+        pills: [],
+        level: "Boon (Level)",
+        items: "Items",
+        build: "Selected Build",
+        stats: "Hero Attributes",
+        calculatedStats: "With Build Applied",
+        itemBonuses: "Item Effects",
+        aggregatedBonuses: "Combined Item Bonuses",
+        conditionalEffects: "Conditional Effects",
+        selectHero: "Select Hero",
         conditional: "Conditional effects",
-        empty: "Select items from the archive inventory.",
+        empty: "Select items to display your build here.",
         lang: "日本語",
-        loading: "Opening the field ledger...",
-        error: "The ledger could not be accessed.",
-        retry: "Retry",
-        price: "Price",
+        loading: "Loading Deadlock data…",
+        error: "Unable to load data.",
+        retry: "Reload",
+        price: "Cost",
     },
     ja: {
-        eyebrow: "調査員向け現場台帳",
-        title: "Deadlock ビルド台帳",
+        eyebrow: "DEADLOCK // ビルドシミュレーター",
+        title: "ビルドシミュレーター",
         subtitle:
-            "レールがうなりを上げる前に次の調査を整えよう。ヒーローを選び、ソウルを武器・耐久・スピリットの購入に配分し、完成した構成が戦場でどう変わるかを確認できる。",
-        helper: "レーンの初手、パワースパイク、条件付き効果の比較を、任務の流れを乱さず素早く行える調査補助ツールだ。",
-        pills: ["ヒーロー起点で設計", "12枠の現場台帳", "即時戦闘読み"],
-        level: "レベル",
-        items: "保管庫の在庫",
-        build: "現在の構成",
-        stats: "戦闘読み",
-        calculatedStats: "構成反映の読み",
-        itemBonuses: "アイテムによる強化・効果",
-        aggregatedBonuses: "合算された効果",
-        conditionalEffects: "条件付きの加護",
-        selectHero: "作戦員を選ぶ",
+            "ヒーロー、ブーン、アイテムを選択し、変化する属性とアイテム効果を確認できます。",
+        helper: "",
+        pills: [],
+        level: "ブーン（レベル）",
+        items: "アイテム",
+        build: "選択中のビルド",
+        stats: "ヒーロー属性",
+        calculatedStats: "ビルド適用後",
+        itemBonuses: "アイテム効果",
+        aggregatedBonuses: "アイテムボーナス合計",
+        conditionalEffects: "条件付き効果",
+        selectHero: "ヒーローを選択",
         conditional: "条件付き効果",
-        empty: "保管庫の在庫からアイテムを選択してください。",
+        empty: "アイテムを選択すると、ここにビルドが表示されます。",
         lang: "English",
-        loading: "現場台帳を開いています...",
-        error: "台帳にアクセスできませんでした。",
-        retry: "再試行",
-        price: "価格",
+        loading: "Deadlockデータを読み込んでいます…",
+        error: "データを読み込めませんでした。",
+        retry: "再読み込み",
+        price: "コスト",
     },
 };
 
@@ -339,6 +355,7 @@ export default function App() {
     const [selectedItems, setSelectedItems] = useState<SelectedItem[]>([]);
     const [isLoading, setLoading] = useState(true);
     const [error, setError] = useState<string>();
+    const modalRef = useRef<HTMLDivElement>(null);
     const t = copy[locale];
 
     const loadBuildData = async () => {
@@ -372,6 +389,49 @@ export default function App() {
     useEffect(() => {
         void loadBuildData();
     }, []);
+
+    useEffect(() => {
+        if (!isHeroModalOpen) return;
+
+        const previousFocus = document.activeElement as HTMLElement | null;
+        const focusableSelector =
+            'button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])';
+        const focusFirstControl = () =>
+            modalRef.current
+                ?.querySelector<HTMLElement>(focusableSelector)
+                ?.focus();
+        const frame = window.requestAnimationFrame(focusFirstControl);
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === "Escape") {
+                setHeroModalOpen(false);
+                return;
+            }
+            if (event.key !== "Tab" || !modalRef.current) return;
+
+            const controls = Array.from(
+                modalRef.current.querySelectorAll<HTMLElement>(
+                    focusableSelector,
+                ),
+            );
+            if (controls.length === 0) return;
+            const first = controls[0];
+            const last = controls[controls.length - 1];
+            if (event.shiftKey && document.activeElement === first) {
+                event.preventDefault();
+                last.focus();
+            } else if (!event.shiftKey && document.activeElement === last) {
+                event.preventDefault();
+                first.focus();
+            }
+        };
+
+        document.addEventListener("keydown", handleKeyDown);
+        return () => {
+            window.cancelAnimationFrame(frame);
+            document.removeEventListener("keydown", handleKeyDown);
+            previousFocus?.focus();
+        };
+    }, [isHeroModalOpen]);
 
     const hero = heroes.find((candidate) => candidate.id === heroId);
     const stats = useMemo(
@@ -640,14 +700,59 @@ export default function App() {
                 <div className="intro-card">
                     <p className="eyebrow">{t.eyebrow}</p>
                     <h1>{t.title}</h1>
-                    <p className="subtitle">{t.subtitle}</p>
-                    <p className="intro-helper">{t.helper}</p>
-                    <div className="intro-pills" aria-label={t.items}>
-                        {t.pills.map((pill) => (
-                            <span key={pill}>{pill}</span>
+                    {t.subtitle && <p className="subtitle">{t.subtitle}</p>}
+                    {t.helper && <p className="intro-helper">{t.helper}</p>}
+                    {t.pills.length > 0 && (
+                        <div className="intro-pills" aria-label={t.items}>
+                            {t.pills.map((pill) => (
+                                <span key={pill}>{pill}</span>
+                            ))}
+                        </div>
+                    )}
+                </div>
+                <section className="mobile-build-summary" aria-label={t.build}>
+                    <div className="mobile-summary-heading">
+                        <h2>{t.build}</h2>
+                        <small>{selectedItems.length}/12</small>
+                    </div>
+                    <div className="mobile-selected-items">
+                        {sortedSelectedItems.length > 0 ? (
+                            sortedSelectedItems.map((selected) => {
+                                const selectedItem = items.find(
+                                    (item) => item.id === selected.itemId,
+                                );
+                                return selectedItem ? (
+                                    <span
+                                        key={selected.instanceId}
+                                        title={selectedItem.name[locale]}
+                                    >
+                                        {renderIcon(
+                                            selectedItem.icon,
+                                            selectedItem.name[locale],
+                                            "build-item-icon",
+                                        )}
+                                    </span>
+                                ) : null;
+                            })
+                        ) : (
+                            <small>{t.empty}</small>
+                        )}
+                    </div>
+                    <div className="mobile-stat-grid">
+                        {statKeys.slice(0, 4).map((key) => (
+                            <div className="stat-row" key={key}>
+                                <span className="stat-label">
+                                    {statLabels[key][locale]}
+                                </span>
+                                <strong>
+                                    {Number.isInteger(stats[key])
+                                        ? stats[key]
+                                        : stats[key].toFixed(2)}
+                                </strong>
+                            </div>
                         ))}
                     </div>
-                </div>
+                </section>
                 <div className="item-sections" aria-label={t.items}>
                     {itemSections.map((section) => (
                         <section
@@ -666,8 +771,7 @@ export default function App() {
                                         alt=""
                                     />
                                 )}
-                                {itemSlotLabels[section.slotType][locale]} ·
-                                Tier {section.tier}
+                                {itemSlotLabels[section.slotType][locale]} · {locale === "ja" ? "ティア" : "Tier"} {section.tier}
                                 <small>{section.items.length}</small>
                             </h2>
                             <div className="item-grid">
@@ -715,6 +819,17 @@ export default function App() {
                                                     )}
                                                     {item.price}
                                                 </small>
+                                                {getItemEffectType(
+                                                    item,
+                                                    locale,
+                                                ) && (
+                                                    <span className="item-effect-type">
+                                                        {getItemEffectType(
+                                                            item,
+                                                            locale,
+                                                        )}
+                                                    </span>
+                                                )}
                                                 {renderItemPropertyTags(
                                                     item,
                                                     locale,
@@ -929,11 +1044,19 @@ export default function App() {
                 </section>
             </section>
             {isHeroModalOpen && (
-                <div className="modal-backdrop" role="dialog" aria-modal="true">
-                    <div className="modal">
+                <div
+                    className="modal-backdrop"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="hero-modal-title"
+                >
+                    <div className="modal" ref={modalRef}>
                         <div className="modal-heading">
-                            <h2>{t.selectHero}</h2>
-                            <button onClick={() => setHeroModalOpen(false)}>
+                            <h2 id="hero-modal-title">{t.selectHero}</h2>
+                            <button
+                                onClick={() => setHeroModalOpen(false)}
+                                aria-label={locale === "ja" ? "閉じる" : "Close"}
+                            >
                                 <X />
                             </button>
                         </div>
