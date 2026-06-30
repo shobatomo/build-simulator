@@ -578,9 +578,7 @@ export default function App() {
 
     const getItemUpgradeGroup = (item: Item) => {
         const text = `${item.name.en} ${item.name.ja}`.toLowerCase();
-        const normalized = text
-            .replace(/[^a-z0-9]+/g, " ")
-            .trim();
+        const normalized = text.replace(/[^a-z0-9]+/g, " ").trim();
         if (!normalized) return undefined;
         const tokens = normalized.split(/\s+/);
         const filtered = tokens.filter(
@@ -620,9 +618,7 @@ export default function App() {
                 (selected) => selected.itemId === itemId,
             );
             if (existingSelection) {
-                return current.filter(
-                    (selected) => selected.itemId !== itemId,
-                );
+                return current.filter((selected) => selected.itemId !== itemId);
             }
 
             const relatedSelections = current.filter((selected) => {
@@ -827,7 +823,9 @@ export default function App() {
                                         alt=""
                                     />
                                 )}
-                                {itemSlotLabels[section.slotType][locale]} · {locale === "ja" ? "ティア" : "Tier"} {section.tier}
+                                {itemSlotLabels[section.slotType][locale]} ·{" "}
+                                {locale === "ja" ? "ティア" : "Tier"}{" "}
+                                {section.tier}
                                 <small>{section.items.length}</small>
                             </h2>
                             <div className="item-grid">
@@ -1111,7 +1109,9 @@ export default function App() {
                             <h2 id="hero-modal-title">{t.selectHero}</h2>
                             <button
                                 onClick={() => setHeroModalOpen(false)}
-                                aria-label={locale === "ja" ? "閉じる" : "Close"}
+                                aria-label={
+                                    locale === "ja" ? "閉じる" : "Close"
+                                }
                             >
                                 <X />
                             </button>
