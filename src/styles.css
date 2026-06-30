@@ -202,6 +202,33 @@ h2 { margin: 0; color: var(--text-main); font-size: 16px; font-weight: 750; lett
 .stat-label { display: inline-flex; align-items: center; gap: 7px; min-width: 0; color: var(--text-muted); font-size: 12px; }
 .stat-icon { width: 18px; height: 18px; object-fit: contain; }
 
+.abilities-panel {
+    padding: 11px;
+    display: grid;
+    gap: 8px;
+    background: #141a1c;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+}
+.abilities-panel > h2 { font-size: 13px; letter-spacing: 0.06em; }
+.ability-list { display: flex; flex-wrap: wrap; gap: 7px; }
+.ability-button {
+    width: 44px;
+    height: 44px;
+    padding: 4px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    background: var(--bg-panel);
+    cursor: pointer;
+}
+.ability-icon { width: 34px; height: 34px; object-fit: contain; }
+.ability-description { margin: 4px 0 0; color: var(--text-muted); font-size: 12px; line-height: 1.55; white-space: pre-line; }
+.ability-property-list { display: grid; gap: 4px; margin-top: 6px; }
+.ability-property-item { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 4px 0; border-top: 1px solid rgba(57, 66, 71, 0.65); color: var(--text-muted); font-size: 11px; }
+.ability-property-item:first-child { border-top: 0; }
+.ability-property-item strong { color: var(--souls); font-variant-numeric: tabular-nums; }
+.empty-abilities { margin: 0; color: var(--text-muted); font-size: 12px; }
+
 .item-effects-summary { margin-top: 2px; padding: 11px; background: #141a1c; border: 1px solid var(--border); border-radius: 4px; }
 .item-effects-summary > h3, .item-effects-summary h4 { margin: 0; }
 .item-effects-summary > h3 { margin-bottom: 10px; font-size: 13px; letter-spacing: 0.06em; }

@@ -13,6 +13,23 @@ export type StatKey =
 export type StatBlock = Record<StatKey, number>;
 export type LocalizedText = Record<Locale, string>;
 
+export interface HeroAbilityProperty {
+  id: string;
+  label: LocalizedText;
+  value: LocalizedText;
+  numericValue: number;
+  unit?: LocalizedText;
+}
+
+export interface HeroAbility {
+  id: string;
+  name: LocalizedText;
+  description: LocalizedText;
+  icon: string;
+  abilityType: string;
+  properties: HeroAbilityProperty[];
+}
+
 export interface Hero {
   id: string;
   name: LocalizedText;
@@ -20,6 +37,7 @@ export interface Hero {
   icon: string;
   baseStats: StatBlock;
   growthPerLevel: StatBlock;
+  abilities?: HeroAbility[];
 }
 
 export interface ItemEffect {

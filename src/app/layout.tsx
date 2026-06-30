@@ -5,7 +5,7 @@ import "../styles.css";
 export const metadata: Metadata = {
     title: "Deadlock Build Simulator",
     description:
-        "ヒーロー、ブーン、アイテムを選び、属性とアイテム効果を確認できるDeadlockビルドシミュレーター。",
+        "ヒーロー、レベル、アイテムを選び、属性とアイテム効果を確認できるDeadlockビルドシミュレーター。",
 };
 
 export default function RootLayout({

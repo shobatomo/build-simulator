@@ -1,6 +1,8 @@
 import type {
   AssetIcons,
   Hero,
+  HeroAbility,
+  HeroAbilityProperty,
   Item,
   ItemPropertyTag,
   LocalizedText,
@@ -193,12 +195,79 @@ const heroGrowthStats = (hero: RawHero, weapon?: RawItem): StatBlock => {
   };
 };
 
-export const formatHeroData = (englishHeroes: RawHero[], japaneseHeroes: RawHero[], allItems: RawItem[]): Hero[] => {
+const abilityPropertySummaries = (english: RawItem, japanese: RawItem): HeroAbilityProperty[] => {
+  const entries = Object.entries(english.properties ?? {}).filter(([, property]) => property?.label || property?.value != null);
+  return entries.map(([id, property]) => {
+    const japaneseProperty = japanese.properties?.[id] ?? property;
+    return {
+      id,
+      label: {
+        en: property?.label ?? id,
+        ja: japaneseProperty?.label ?? property?.label ?? id,
+      },
+      value: {
+        en: propertyValue(property),
+        ja: propertyValue(japaneseProperty) || propertyValue(property),
+      },
+      numericValue: parseNumber(property?.value),
+      unit:
+        property?.postfix || japaneseProperty?.postfix
+          ? {
+              en: property?.postfix ?? '',
+              ja: japaneseProperty?.postfix ?? property?.postfix ?? '',
+            }
+          : undefined,
+    };
+  });
+};
+
+const heroAbilities = (hero: RawHero, englishItems: RawItem[], japaneseItems: RawItem[]): HeroAbility[] => {
+  const abilityClassNames = new Set(
+    Object.values(hero.items ?? {}).filter((value): value is string => typeof value === 'string'),
+  );
+  const japaneseById = new Map(japaneseItems.filter((item) => item.type === 'ability').map((item) => [item.id, item]));
+  return englishItems
+    .filter((item) => item.type === 'ability')
+    .filter(
+      (item) =>
+        abilityClassNames.has(item.class_name) ||
+        item.hero === hero.id ||
+        (item.heroes ?? []).includes(hero.id),
+    )
+    .map((item) => {
+      const japanese = japaneseById.get(item.id) ?? item;
+      return {
+        id: String(item.id),
+        name: { en: item.name, ja: japanese.name ?? item.name },
+        description: {
+          en: itemDescription(item),
+          ja: itemDescription(japanese) || itemDescription(item),
+        },
+        icon:
+          item.image_webp ??
+          item.image ??
+          item.shop_image_webp ??
+          item.shop_image ??
+          item.shop_image_small_webp ??
+          item.shop_image_small ??
+          '🪄',
+        abilityType: item.ability_type ?? '',
+        properties: abilityPropertySummaries(item, japanese),
+      };
+    });
+};
+
+export const formatHeroData = (
+  englishHeroes: RawHero[],
+  japaneseHeroes: RawHero[],
+  englishItems: RawItem[],
+  japaneseItems: RawItem[],
+): Hero[] => {
   const japaneseById = new Map(japaneseHeroes.map((hero) => [hero.id, hero]));
   return englishHeroes.map((hero) => {
     const japanese = japaneseById.get(hero.id);
     const primaryWeaponClass = hero.items?.weapon_primary;
-    const weapon = allItems.find(
+    const weapon = englishItems.find(
       (item) =>
         item.type === 'weapon' &&
         (item.class_name === primaryWeaponClass || (!primaryWeaponClass && item.hero === hero.id)),
@@ -218,6 +287,7 @@ export const formatHeroData = (englishHeroes: RawHero[], japaneseHeroes: RawHero
         '🧙',
       baseStats: heroStats(hero, weapon),
       growthPerLevel: heroGrowthStats(hero, weapon),
+      abilities: heroAbilities(hero, englishItems, japaneseItems),
     };
   });
 };
@@ -545,7 +615,7 @@ export const formatDeadlockData = ({
   japaneseItems,
   icons,
 }: Awaited<ReturnType<typeof loadDeadlockRawAssets>>) => ({
-    heroes: formatHeroData(englishHeroes, japaneseHeroes, englishItems),
+    heroes: formatHeroData(englishHeroes, japaneseHeroes, englishItems, japaneseItems),
     items: formatItemData(englishItems, japaneseItems),
     assets: {
       icons: selectAssetIcons(icons),
