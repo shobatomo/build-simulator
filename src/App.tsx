@@ -17,12 +17,10 @@ import { fetchDeadlockData } from "./api/deadlockApi";
 import type {
     AssetIcons,
     Hero,
-    HeroAbilityProperty,
     Item,
     ItemPropertyTag,
     Locale,
     SelectedItem,
-    StatBlock,
 } from "./types";
 
 import { calculateStats, statKeys, statLabels } from "./utils/calculateStats";
@@ -187,78 +185,6 @@ const getItemEffectType = (item: Item, locale: Locale) => {
     return labels[type][locale];
 };
 
-const getAbilityScalingStats = (
-    property: HeroAbilityProperty,
-): { statKey: keyof StatBlock; multiplier: number } | undefined => {
-    const text = `${property.label.en} ${property.label.ja} ${property.id}`.toLowerCase();
-    const scaleClass = property.cssClass?.toLowerCase() ?? "";
-    const scaleFunction = property.scaleFunction?.className?.toLowerCase() ?? "";
-    const specificScaleType = property.scaleFunction?.specificStatScaleType?.toLowerCase() ?? "";
-
-    if (/(spirit|tech|arcane|magic)/.test(text) || scaleClass.includes("tech_damage") || specificScaleType.includes("etech")) {
-        return { statKey: "spiritPower", multiplier: 0.06 };
-    }
-    if (/(weapon|bullet|shot|damage)/.test(text) && !/(health|hp)/.test(text)) {
-        return { statKey: "weaponDamage", multiplier: 0.04 };
-    }
-    if (/(cooldown|cd)/.test(text) || scaleFunction.includes("cooldown")) {
-        return { statKey: "cooldownReduction", multiplier: 0.01 };
-    }
-    if (/(move|speed|dash|sprint)/.test(text) || scaleClass.includes("move_speed")) {
-        return { statKey: "moveSpeed", multiplier: 0.02 };
-    }
-    if (/(health|hp|vitality)/.test(text)) return { statKey: "health", multiplier: 0.015 };
-    if (/stamina/.test(text)) return { statKey: "stamina", multiplier: 0.03 };
-    if (/(fire rate|fire_rate|rate)/.test(text)) return { statKey: "fireRate", multiplier: 0.03 };
-    if (/(range|distance)/.test(text)) return { statKey: "range", multiplier: 0.03 };
-    if (/(duration|channel|slow|debuff)/.test(text) || scaleFunction.includes("duration")) {
-        return { statKey: "spiritPower", multiplier: 0.01 };
-    }
-    return undefined;
-};
-
-const calculateAbilityPropertyValue = (
-    property: HeroAbilityProperty,
-    stats: StatBlock,
-) => {
-    const baseValue = property.numericValue ?? 0;
-    if (!Number.isFinite(baseValue) || baseValue === 0) {
-        return Number(property.value.en || property.value.ja || 0) || 0;
-    }
-
-    const scaling = getAbilityScalingStats(property);
-    if (!scaling) return Number(baseValue.toFixed(2));
-
-    const scaledValue = baseValue + stats[scaling.statKey] * scaling.multiplier;
-    return Number(scaledValue.toFixed(2));
-};
-
-const formatAbilityPropertyValue = (
-    property: HeroAbilityProperty,
-    locale: Locale,
-    stats: StatBlock,
-) => {
-    const value = calculateAbilityPropertyValue(property, stats);
-    const baseValue = property.numericValue ?? 0;
-    const unit = property.unit?.[locale] ?? "";
-    const displayValue = Number.isInteger(value) ? value : value.toFixed(2);
-    if (baseValue !== value) {
-        return `${displayValue}${unit} (${baseValue}${unit})`;
-    }
-    return `${displayValue}${unit}`;
-};
-
-const getAbilityTypeLabel = (ability: { abilityType?: string }, locale: Locale) => {
-    const labels = {
-        signature: { en: "Signature", ja: "シグネチャー" },
-        passive: { en: "Passive", ja: "パッシブ" },
-        innate: { en: "Innate", ja: "基本" },
-        active: { en: "Active", ja: "アクティブ" },
-    } as const;
-    const abilityType = ability.abilityType?.toLowerCase();
-    return labels[abilityType as keyof typeof labels]?.[locale] ?? "";
-};
-
 const itemSlotOrder = ["weapon", "vitality", "spirit"] as const;
 const itemTierOrder = [1, 2, 3, 4] as const;
 
@@ -375,8 +301,6 @@ const copy = {
         level: "Boon (Level)",
         items: "Items",
         build: "Selected Build",
-        abilities: "Hero Abilities",
-        noAbilities: "No abilities available for this hero.",
         stats: "Hero Attributes",
         calculatedStats: "With Build Applied",
         itemBonuses: "Item Effects",
@@ -401,8 +325,6 @@ const copy = {
         level: "ブーン（レベル）",
         items: "アイテム",
         build: "選択中のビルド",
-        abilities: "ヒーローアビリティ",
-        noAbilities: "このヒーローのアビリティはありません。",
         stats: "ヒーロー属性",
         calculatedStats: "ビルド適用後",
         itemBonuses: "アイテム効果",
@@ -654,20 +576,76 @@ export default function App() {
     const formatItemDetails = (item: Item) =>
         `${item.name[locale]} / ${item.category[locale]} / ${t.price}: ${item.price}`;
 
+    const getItemUpgradeGroup = (item: Item) => {
+        const text = `${item.name.en} ${item.name.ja}`.toLowerCase();
+        const normalized = text
+            .replace(/[^a-z0-9]+/g, " ")
+            .trim();
+        if (!normalized) return undefined;
+        const tokens = normalized.split(/\s+/);
+        const filtered = tokens.filter(
+            (token) =>
+                ![
+                    "extra",
+                    "greater",
+                    "ultimate",
+                    "major",
+                    "minor",
+                    "basic",
+                    "advanced",
+                    "elite",
+                    "tier",
+                    "t",
+                ].includes(token),
+        );
+        const base = filtered.join(" ");
+        return base ? `${item.slotType ?? "item"}:${base}` : undefined;
+    };
+
+    const isUpgradeRelation = (left: Item, right: Item) => {
+        if (left.slotType !== right.slotType) return false;
+        if (!left.tier || !right.tier) return false;
+        const leftGroup = getItemUpgradeGroup(left);
+        const rightGroup = getItemUpgradeGroup(right);
+        if (!leftGroup || !rightGroup || leftGroup !== rightGroup) return false;
+        return left.tier !== right.tier;
+    };
+
     const toggleItem = (itemId: string) => {
         const item = items.find((candidate) => candidate.id === itemId);
+        if (!item) return;
+
         setSelectedItems((current) => {
-            if (current.some((selected) => selected.itemId === itemId)) {
-                return current.filter((selected) => selected.itemId !== itemId);
+            const existingSelection = current.find(
+                (selected) => selected.itemId === itemId,
+            );
+            if (existingSelection) {
+                return current.filter(
+                    (selected) => selected.itemId !== itemId,
+                );
             }
-            if (current.length >= 12) return current;
+
+            const relatedSelections = current.filter((selected) => {
+                const candidate = items.find(
+                    (existingItem) => existingItem.id === selected.itemId,
+                );
+                return candidate ? isUpgradeRelation(candidate, item) : false;
+            });
+            const nextSelections = current.filter(
+                (selected) =>
+                    !relatedSelections.some(
+                        (related) => related.instanceId === selected.instanceId,
+                    ),
+            );
+
+            if (nextSelections.length >= 12) return current;
             return [
-                ...current,
+                ...nextSelections,
                 {
                     instanceId: crypto.randomUUID(),
                     itemId,
                     enabledEffectIds:
-                        item?.effects
+                        item.effects
                             .filter((effect) => effect.defaultEnabled)
                             .map((effect) => effect.id) ?? [],
                 },
@@ -985,70 +963,6 @@ export default function App() {
                             </button>
                         );
                     })}
-                </section>
-
-                <section className="abilities-panel">
-                    <h2>{t.abilities}</h2>
-                    <div className="ability-list">
-                        {hero.abilities?.length ? (
-                            hero.abilities.map((ability) => (
-                                <PopoverButton
-                                    className="ability-button icon-only-card"
-                                    key={ability.id}
-                                    aria-label={ability.name[locale]}
-                                    tooltip={
-                                        <>
-                                            <strong>{ability.name[locale]}</strong>
-                                            <small>
-                                                {getAbilityTypeLabel(
-                                                    ability,
-                                                    locale,
-                                                )}
-                                            </small>
-                                            {ability.description?.[locale] && (
-                                                <p className="ability-description">
-                                                    {ability.description[locale]}
-                                                </p>
-                                            )}
-                                            {ability.properties.length > 0 && (
-                                                <div className="ability-property-list">
-                                                    {ability.properties.map(
-                                                        (property) => (
-                                                            <div
-                                                                className="ability-property-item"
-                                                                key={property.id}
-                                                            >
-                                                                <span>
-                                                                    {property.label[
-                                                                        locale
-                                                                    ]}
-                                                                </span>
-                                                                <strong>
-                                                                    {formatAbilityPropertyValue(
-                                                                        property,
-                                                                        locale,
-                                                                        stats,
-                                                                    )}
-                                                                </strong>
-                                                            </div>
-                                                        ),
-                                                    )}
-                                                </div>
-                                            )}
-                                        </>
-                                    }
-                                >
-                                    {renderIcon(
-                                        ability.icon,
-                                        ability.name[locale],
-                                        "ability-icon",
-                                    )}
-                                </PopoverButton>
-                            ))
-                        ) : (
-                            <p className="empty-abilities">{t.noAbilities}</p>
-                        )}
-                    </div>
                 </section>
 
                 <section className="stats-panel">
