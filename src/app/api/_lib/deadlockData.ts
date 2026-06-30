@@ -195,6 +195,9 @@ const heroGrowthStats = (hero: RawHero, weapon?: RawItem): StatBlock => {
   };
 };
 
+const normalizeAbilityClassName = (value: string) =>
+  value.replace(/^citadel_/, '').replace(/^ability_/, 'ability_').toLowerCase();
+
 const abilityPropertySummaries = (english: RawItem, japanese: RawItem): HeroAbilityProperty[] => {
   const entries = Object.entries(english.properties ?? {}).filter(([, property]) => property?.label || property?.value != null);
   return entries.map(([id, property]) => {
@@ -217,23 +220,31 @@ const abilityPropertySummaries = (english: RawItem, japanese: RawItem): HeroAbil
               ja: japaneseProperty?.postfix ?? property?.postfix ?? '',
             }
           : undefined,
+      cssClass: undefined,
+      scaleFunction: undefined,
     };
   });
 };
 
 const heroAbilities = (hero: RawHero, englishItems: RawItem[], japaneseItems: RawItem[]): HeroAbility[] => {
-  const abilityClassNames = new Set(
-    Object.values(hero.items ?? {}).filter((value): value is string => typeof value === 'string'),
+  const heroClassNames = new Set(
+    Object.values(hero.items ?? {})
+      .filter((value): value is string => typeof value === 'string')
+      .map(normalizeAbilityClassName),
   );
   const japaneseById = new Map(japaneseItems.filter((item) => item.type === 'ability').map((item) => [item.id, item]));
   return englishItems
     .filter((item) => item.type === 'ability')
-    .filter(
-      (item) =>
-        abilityClassNames.has(item.class_name) ||
+    .filter((item) => {
+      const normalizedClassName = normalizeAbilityClassName(item.class_name);
+      return (
+        heroClassNames.has(normalizedClassName) ||
+        heroClassNames.has(normalizeAbilityClassName(item.class_name.replace(/^citadel_/, ''))) ||
+        heroClassNames.has(normalizeAbilityClassName(item.class_name.replace(/^ability_/, ''))) ||
         item.hero === hero.id ||
-        (item.heroes ?? []).includes(hero.id),
-    )
+        (item.heroes ?? []).includes(hero.id)
+      );
+    })
     .map((item) => {
       const japanese = japaneseById.get(item.id) ?? item;
       return {

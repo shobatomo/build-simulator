@@ -13,12 +13,21 @@ export type StatKey =
 export type StatBlock = Record<StatKey, number>;
 export type LocalizedText = Record<Locale, string>;
 
+export interface HeroAbilityPropertyScaleFunction {
+  className?: string;
+  subclassName?: string;
+  specificStatScaleType?: string;
+  statScale?: number;
+}
+
 export interface HeroAbilityProperty {
   id: string;
   label: LocalizedText;
   value: LocalizedText;
   numericValue: number;
   unit?: LocalizedText;
+  cssClass?: string;
+  scaleFunction?: HeroAbilityPropertyScaleFunction;
 }
 
 export interface HeroAbility {

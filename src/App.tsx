@@ -187,20 +187,33 @@ const getItemEffectType = (item: Item, locale: Locale) => {
     return labels[type][locale];
 };
 
-const getAbilityScalingStatKey = (
+const getAbilityScalingStats = (
     property: HeroAbilityProperty,
-): keyof StatBlock | undefined => {
+): { statKey: keyof StatBlock; multiplier: number } | undefined => {
     const text = `${property.label.en} ${property.label.ja} ${property.id}`.toLowerCase();
-    if (/(spirit|tech|arcane)/.test(text)) return "spiritPower";
-    if (/(weapon|bullet|shot|damage)/.test(text) && !/(health|hp)/.test(text)) {
-        return "weaponDamage";
+    const scaleClass = property.cssClass?.toLowerCase() ?? "";
+    const scaleFunction = property.scaleFunction?.className?.toLowerCase() ?? "";
+    const specificScaleType = property.scaleFunction?.specificStatScaleType?.toLowerCase() ?? "";
+
+    if (/(spirit|tech|arcane|magic)/.test(text) || scaleClass.includes("tech_damage") || specificScaleType.includes("etech")) {
+        return { statKey: "spiritPower", multiplier: 0.06 };
     }
-    if (/(health|hp|vitality)/.test(text)) return "health";
-    if (/(cooldown|cd)/.test(text)) return "cooldownReduction";
-    if (/(move|speed|dash|sprint)/.test(text)) return "moveSpeed";
-    if (/stamina/.test(text)) return "stamina";
-    if (/(fire rate|fire_rate|rate)/.test(text)) return "fireRate";
-    if (/(range|distance)/.test(text)) return "range";
+    if (/(weapon|bullet|shot|damage)/.test(text) && !/(health|hp)/.test(text)) {
+        return { statKey: "weaponDamage", multiplier: 0.04 };
+    }
+    if (/(cooldown|cd)/.test(text) || scaleFunction.includes("cooldown")) {
+        return { statKey: "cooldownReduction", multiplier: 0.01 };
+    }
+    if (/(move|speed|dash|sprint)/.test(text) || scaleClass.includes("move_speed")) {
+        return { statKey: "moveSpeed", multiplier: 0.02 };
+    }
+    if (/(health|hp|vitality)/.test(text)) return { statKey: "health", multiplier: 0.015 };
+    if (/stamina/.test(text)) return { statKey: "stamina", multiplier: 0.03 };
+    if (/(fire rate|fire_rate|rate)/.test(text)) return { statKey: "fireRate", multiplier: 0.03 };
+    if (/(range|distance)/.test(text)) return { statKey: "range", multiplier: 0.03 };
+    if (/(duration|channel|slow|debuff)/.test(text) || scaleFunction.includes("duration")) {
+        return { statKey: "spiritPower", multiplier: 0.01 };
+    }
     return undefined;
 };
 
@@ -213,12 +226,11 @@ const calculateAbilityPropertyValue = (
         return Number(property.value.en || property.value.ja || 0) || 0;
     }
 
-    const statKey = getAbilityScalingStatKey(property);
-    const statValue = statKey ? stats[statKey] : 0;
-    if (!statKey || statValue <= 0) return Number(baseValue.toFixed(2));
+    const scaling = getAbilityScalingStats(property);
+    if (!scaling) return Number(baseValue.toFixed(2));
 
-    const multiplier = Math.min(0.18, Math.max(0.01, Math.abs(baseValue) / 1000));
-    return Number((baseValue + statValue * multiplier).toFixed(2));
+    const scaledValue = baseValue + stats[scaling.statKey] * scaling.multiplier;
+    return Number(scaledValue.toFixed(2));
 };
 
 const formatAbilityPropertyValue = (

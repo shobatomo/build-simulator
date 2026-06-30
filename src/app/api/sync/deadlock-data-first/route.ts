@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { loadDeadlockData } from '../../_lib/deadlockData';
 import {
   loadDeadlockDataFromSupabase,
   syncDeadlockDataToSupabase,
@@ -20,13 +21,18 @@ const errorResponse = (error: unknown) => {
 
 export async function GET() {
   try {
-    const data = await loadDeadlockDataFromSupabase();
-    if (data.heroes.length > 0 && data.items.length > 0) {
-      return NextResponse.json(data);
-    }
-    return NextResponse.json(await syncDeadlockDataToSupabase());
+    const freshData = await loadDeadlockData();
+    return NextResponse.json(freshData);
   } catch (error) {
-    return errorResponse(error);
+    try {
+      const data = await loadDeadlockDataFromSupabase();
+      if (data.heroes.length > 0 && data.items.length > 0) {
+        return NextResponse.json(data);
+      }
+      return NextResponse.json(await syncDeadlockDataToSupabase());
+    } catch (fallbackError) {
+      return errorResponse(fallbackError);
+    }
   }
 }
 
