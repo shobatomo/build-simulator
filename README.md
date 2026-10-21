@@ -6,7 +6,7 @@ Next.js App Router MVP for a Deadlock MOBA build simulator. The frontend request
 
 For production, prefer a scheduled ingestion job rather than fetching game data directly from the browser:
 
-1. A scheduled job calls `POST /api/sync/deadlock-data-first`.
+1. An authorized server-side job calls `POST /api/sync/deadlock-data-first` with a bearer token matching `DEADLOCK_SYNC_SECRET`.
 2. The route fetches the trusted Deadlock data API on the server.
 3. The route normalizes heroes, items, abilities, stat keys, conditional effects, and localized labels.
 4. The route upserts into Supabase tables (`deadlock_heroes`, `deadlock_items`, `deadlock_abilities`, `deadlock_asset_documents`, `deadlock_sync_runs`).
@@ -14,6 +14,17 @@ For production, prefer a scheduled ingestion job rather than fetching game data 
 6. Keep manual override fields in Supabase for data that the external API does not expose cleanly.
 
 This is safer than live browser fetches because it avoids rate limits, keeps service-role credentials private, and lets the app continue working if the external API is temporarily unavailable.
+
+### Current read and update behavior
+
+- The frontend currently uses `GET /api/sync/deadlock-data-first`: external API first, then saved Supabase data on failure. GET never writes to the database. If the fallback lacks heroes or items, it returns `503 DATA_UNAVAILABLE` instead of starting a sync.
+- `POST /api/sync/deadlock-data-first` is the only update entry point. It checks authorization before any data access. A missing, empty, or whitespace-containing `DEADLOCK_SYNC_SECRET` disables updates with `503 SYNC_NOT_CONFIGURED`. With valid configuration, a missing or invalid `Authorization: Bearer <token>` header returns `401 UNAUTHORIZED`.
+- `DEADLOCK_SYNC_SECRET` is a dedicated server-side secret, separate from Supabase credentials. Never expose it through `NEXT_PUBLIC_`, client code, query strings, or source control. No secret or scheduled job is created by the code change. Production configuration and deployment require a separate operational step; leaving it unset keeps updates disabled.
+- The scheduled ingestion and database-first read strategy above remains a recommendation, not an enabled scheduler.
+
+### Isolated checks
+
+Run `npm test`, `npm run lint`, and `npx tsc --noEmit --incremental false`. The route tests use Node's test runner and TypeScript transpilation with mocked data modules and an isolated environment. They never load `.env`, connect to Supabase, call the external API, or execute a real synchronization. `npm run build` checks the production build separately.
 
 ## Local development
 

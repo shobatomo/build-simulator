@@ -1,3 +1,5 @@
+import { Buffer } from 'node:buffer';
+import { timingSafeEqual } from 'node:crypto';
 import { NextResponse } from 'next/server';
 import { loadDeadlockData } from '../../_lib/deadlockData';
 import {
@@ -23,20 +25,46 @@ export async function GET() {
   try {
     const freshData = await loadDeadlockData();
     return NextResponse.json(freshData);
-  } catch (error) {
+  } catch {
     try {
       const data = await loadDeadlockDataFromSupabase();
       if (data.heroes.length > 0 && data.items.length > 0) {
         return NextResponse.json(data);
       }
-      return NextResponse.json(await syncDeadlockDataToSupabase());
+      // Public reads must never trigger ingestion or database writes.
+      return NextResponse.json(
+        { error: '利用可能なゲームデータがありません。', code: 'DATA_UNAVAILABLE' },
+        { status: 503, headers: { 'Cache-Control': 'no-store' } },
+      );
     } catch (fallbackError) {
       return errorResponse(fallbackError);
     }
   }
 }
 
-export async function POST() {
+export async function POST(request: Request) {
+  const secret = process.env.DEADLOCK_SYNC_SECRET;
+  // Fail closed before contacting the upstream API or Supabase.
+  if (!secret || /\s/.test(secret)) {
+    return NextResponse.json(
+      { error: 'データ更新は現在利用できません。', code: 'SYNC_NOT_CONFIGURED' },
+      { status: 503, headers: { 'Cache-Control': 'no-store' } },
+    );
+  }
+
+  const token = request.headers.get('authorization')?.match(/^Bearer (\S+)$/i)?.[1];
+  const expected = Buffer.from(secret);
+  const supplied = Buffer.from(token ?? '');
+  if (supplied.length !== expected.length || !timingSafeEqual(supplied, expected)) {
+    return NextResponse.json(
+      { error: 'データ更新の認証に失敗しました。', code: 'UNAUTHORIZED' },
+      {
+        status: 401,
+        headers: { 'Cache-Control': 'no-store', 'WWW-Authenticate': 'Bearer' },
+      },
+    );
+  }
+
   try {
     return NextResponse.json(await syncDeadlockDataToSupabase());
   } catch (error) {
