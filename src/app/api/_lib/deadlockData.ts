@@ -9,6 +9,7 @@ import type {
   StatBlock,
   StatKey,
 } from '../../../types';
+import { resolveUpgradeRelations } from '../../../domain/itemUpgrades';
 
 // Base URL and paths are defined by server/api-1.json (OpenAPI).
 export const DEADLOCK_API_BASE = process.env.DEADLOCK_API_BASE_URL ?? 'https://api.deadlock-api.com/v1/assets';
@@ -73,6 +74,7 @@ interface RawWeaponInfo {
 export interface RawItem {
   id: number;
   class_name: string;
+  component_items?: string[] | null;
   name: string;
   type: string;
   item_slot_type?: 'weapon' | 'vitality' | 'spirit' | null;
@@ -510,6 +512,9 @@ const categoryLabels: Record<'weapon' | 'vitality' | 'spirit', LocalizedText> = 
 
 export const formatItemData = (englishItems: RawItem[], japaneseItems: RawItem[]): Item[] => {
   const japaneseById = new Map(japaneseItems.map((item) => [item.id, item]));
+  const relations = resolveUpgradeRelations(englishItems.map((item) => ({
+    id: String(item.id), className: item.class_name, componentClassNames: item.component_items,
+  })));
   return englishItems
     .filter(
       (item): item is RawItem & { item_slot_type: 'weapon' | 'vitality' | 'spirit' } =>
@@ -539,6 +544,8 @@ export const formatItemData = (englishItems: RawItem[], japaneseItems: RawItem[]
       );
       return {
         id: String(item.id),
+        className: item.class_name,
+        upgradeRelations: relations[String(item.id)],
         name: { en: item.name, ja: japanese.name ?? item.name },
         category: { en: `${labels.en}${tier}`, ja: `${labels.ja}${japaneseTier}` },
         slotType: item.item_slot_type,

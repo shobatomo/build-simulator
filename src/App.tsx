@@ -20,10 +20,11 @@ import type {
     Item,
     ItemPropertyTag,
     Locale,
-    SelectedItem,
 } from "./types";
 
 import { calculateStats, statKeys, statLabels } from "./utils/calculateStats";
+import { indexItemUpgrades } from "./domain/itemUpgrades";
+import { toggleBuildItem, type ItemSelectionState } from "./domain/itemSelection";
 
 type PopoverPosition = {
     left: number;
@@ -352,11 +353,13 @@ export default function App() {
     const [heroId, setHeroId] = useState<string>();
     const [level, setLevel] = useState(1);
     const [isHeroModalOpen, setHeroModalOpen] = useState(false);
-    const [selectedItems, setSelectedItems] = useState<SelectedItem[]>([]);
+    const [selection, setSelection] = useState<ItemSelectionState>({ items: [], notice: null });
+    const selectedItems = selection.items;
     const [isLoading, setLoading] = useState(true);
     const [error, setError] = useState<string>();
     const modalRef = useRef<HTMLDivElement>(null);
     const t = copy[locale];
+    const upgradeIndex = useMemo(() => indexItemUpgrades(items), [items]);
 
     const loadBuildData = async () => {
         setLoading(true);
@@ -372,11 +375,12 @@ export default function App() {
             setItems(apiItems);
             setAssetIcons(apiAssets.icons);
             setHeroId((currentHeroId) => currentHeroId ?? apiHeroes[0]?.id);
-            setSelectedItems((currentItems) =>
-                currentItems.filter((selected) =>
+            setSelection((current) => ({
+                items: current.items.filter((selected) =>
                     apiItems.some((item) => item.id === selected.itemId),
                 ),
-            );
+                notice: null,
+            }));
         } catch (caughtError) {
             setError(
                 caughtError instanceof Error ? caughtError.message : t.error,
@@ -576,78 +580,25 @@ export default function App() {
     const formatItemDetails = (item: Item) =>
         `${item.name[locale]} / ${item.category[locale]} / ${t.price}: ${item.price}`;
 
-    const getItemUpgradeGroup = (item: Item) => {
-        const text = `${item.name.en} ${item.name.ja}`.toLowerCase();
-        const normalized = text.replace(/[^a-z0-9]+/g, " ").trim();
-        if (!normalized) return undefined;
-        const tokens = normalized.split(/\s+/);
-        const filtered = tokens.filter(
-            (token) =>
-                ![
-                    "extra",
-                    "greater",
-                    "ultimate",
-                    "major",
-                    "minor",
-                    "basic",
-                    "advanced",
-                    "elite",
-                    "tier",
-                    "t",
-                ].includes(token),
-        );
-        const base = filtered.join(" ");
-        return base ? `${item.slotType ?? "item"}:${base}` : undefined;
-    };
-
-    const isUpgradeRelation = (left: Item, right: Item) => {
-        if (left.slotType !== right.slotType) return false;
-        if (!left.tier || !right.tier) return false;
-        const leftGroup = getItemUpgradeGroup(left);
-        const rightGroup = getItemUpgradeGroup(right);
-        if (!leftGroup || !rightGroup || leftGroup !== rightGroup) return false;
-        return left.tier !== right.tier;
-    };
-
     const toggleItem = (itemId: string) => {
-        const item = items.find((candidate) => candidate.id === itemId);
-        if (!item) return;
-
-        setSelectedItems((current) => {
-            const existingSelection = current.find(
-                (selected) => selected.itemId === itemId,
-            );
-            if (existingSelection) {
-                return current.filter((selected) => selected.itemId !== itemId);
-            }
-
-            const relatedSelections = current.filter((selected) => {
-                const candidate = items.find(
-                    (existingItem) => existingItem.id === selected.itemId,
-                );
-                return candidate ? isUpgradeRelation(candidate, item) : false;
-            });
-            const nextSelections = current.filter(
-                (selected) =>
-                    !relatedSelections.some(
-                        (related) => related.instanceId === selected.instanceId,
-                    ),
-            );
-
-            if (nextSelections.length >= 12) return current;
-            return [
-                ...nextSelections,
-                {
-                    instanceId: crypto.randomUUID(),
-                    itemId,
-                    enabledEffectIds:
-                        item.effects
-                            .filter((effect) => effect.defaultEnabled)
-                            .map((effect) => effect.id) ?? [],
-                },
-            ];
-        });
+        const instanceId = crypto.randomUUID();
+        setSelection((current) => toggleBuildItem(current, itemId, upgradeIndex, instanceId));
     };
+
+    const itemNames = (ids: string[]) => ids.map((id) => upgradeIndex.byId.get(id)?.name[locale] ?? id).join(" / ");
+    const selectionMessage = (() => {
+        const notice = selection.notice;
+        if (!notice) return "";
+        const name = itemNames([notice.itemId]);
+        const related = itemNames(notice.relatedIds);
+        if (notice.kind === "blocked-upgrade") return locale === "ja"
+            ? `${related} を選択中のため、構成元 ${name} は追加できません。`
+            : `Cannot add ${name}: its upgrade ${related} is already selected.`;
+        if (notice.kind === "full") return locale === "ja" ? "アイテムは12枠までです。追加するには選択を解除してください。" : "All 12 slots are occupied. Remove an item before adding another.";
+        if (notice.kind === "invalid-item") return locale === "ja" ? "アイテムの識別情報または構成関係に問題があるため追加できません。" : "This item's identity or component relationships are invalid; it cannot be added.";
+        if (notice.kind === "replaced") return locale === "ja" ? `${name} を選択し、構成元 ${related} を解除しました。` : `Selected ${name} and removed its components: ${related}.`;
+        return locale === "ja" ? `${name} ${notice.kind === "added" ? "を選択しました。" : "を解除しました。"}` : `${notice.kind === "added" ? "Selected" : "Removed"} ${name}.`;
+    })();
 
     const formatAggregatedValue = (
         total: number,
@@ -659,8 +610,8 @@ export default function App() {
     };
 
     const toggleEffect = (instanceId: string, effectId: string) => {
-        setSelectedItems((current) =>
-            current.map((selected) =>
+        setSelection((current) => ({ ...current,
+            items: current.items.map((selected) =>
                 selected.instanceId !== instanceId
                     ? selected
                     : {
@@ -674,7 +625,7 @@ export default function App() {
                               : [...selected.enabledEffectIds, effectId],
                       },
             ),
-        );
+        }));
     };
     if (isLoading) {
         return (
@@ -762,6 +713,17 @@ export default function App() {
                         </div>
                     )}
                 </div>
+                <div className="selection-feedback" role="status" aria-live="polite" aria-atomic="true">
+                    {selectionMessage}
+                </div>
+                {(upgradeIndex.unavailableIds.length > 0 || upgradeIndex.diagnostics.length > 0) && (
+                    <details className="upgrade-diagnostics">
+                        <summary>{locale === "ja" ? "一部の構成関係を確認できません" : "Some component relationships are unavailable"}</summary>
+                        <p>{locale === "ja" ? "確認できた関係だけを自動解除に使います。関係のない旧保存データや未解決の参照から、名前で構成元を推測することはありません。" : "Only confirmed relationships trigger automatic removal. Missing legacy data and unresolved references are never inferred from item names."}</p>
+                        {upgradeIndex.unavailableIds.length > 0 && <p>{locale === "ja" ? "構成関係のない保存アイテム" : "Items without relationship metadata"}: {upgradeIndex.unavailableIds.length}</p>}
+                        <ul>{upgradeIndex.diagnostics.map((issue, index) => <li key={`${issue.itemId}-${issue.code}-${index}`}>{itemNames([issue.itemId])}: {issue.code}{issue.reference ? ` (${issue.reference})` : ""}</li>)}</ul>
+                    </details>
+                )}
                 <section className="mobile-build-summary" aria-label={t.build}>
                     <div className="mobile-summary-heading">
                         <h2>{t.build}</h2>
@@ -844,6 +806,9 @@ export default function App() {
                                                 <strong>
                                                     {item.name[locale]}
                                                 </strong>
+                                                {item.upgradeRelations?.componentIds.length ? <small>{locale === "ja" ? "構成元" : "Components"}: {itemNames(item.upgradeRelations.componentIds)}</small> : null}
+                                                {upgradeIndex.directUpgradesByComponentId.get(item.id)?.size ? <small>{locale === "ja" ? "アップグレード先" : "Upgrades to"}: {itemNames([...upgradeIndex.directUpgradesByComponentId.get(item.id)!])}</small> : null}
+                                                {!item.upgradeRelations || item.upgradeRelations.status === "unresolved" ? <small>{locale === "ja" ? "構成関係の一部または全部が未確認です。" : "Some or all component relationships are unverified."}</small> : null}
                                                 <small>
                                                     {item.slotType &&
                                                         assetIcons.categories[

@@ -861,3 +861,25 @@ h2 {
         grid-template-rows: repeat(4, minmax(64px, auto));
     }
 }
+/* Selection feedback remains visible while browsing the item list. */
+.selection-feedback:not(:empty) {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  padding: 12px;
+  margin-block: 12px;
+  border: 1px solid #b8a96f;
+  border-radius: 8px;
+  background: #171a20;
+  color: #f4eddb;
+}
+
+.upgrade-diagnostics {
+  margin-block: 12px;
+  padding: 12px;
+  border: 1px solid #b8a96f;
+  border-radius: 8px;
+}
+
+.upgrade-diagnostics summary { cursor: pointer; }
+.upgrade-diagnostics ul { overflow-wrap: anywhere; }

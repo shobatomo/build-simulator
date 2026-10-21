@@ -26,6 +26,34 @@ This is safer than live browser fetches because it avoids rate limits, keeps ser
 
 Run `npm test`, `npm run lint`, and `npx tsc --noEmit --incremental false`. The route tests use Node's test runner and TypeScript transpilation with mocked data modules and an isolated environment. They never load `.env`, connect to Supabase, call the external API, or execute a real synchronization. `npm run build` checks the production build separately.
 
+## Item component selection
+
+The item picker resolves the API's `component_items` class names to item IDs using
+the full English item collection before shop filtering. It records direct and
+transitive components and builds a reverse index for upgrade checks. Display names,
+tiers, prices and shared components are never used to guess an upgrade relationship.
+
+- Selecting an upgrade removes every selected confirmed component, including
+  multi-stage ancestors. Capacity is checked after removal, so upgrading at 12
+  occupied slots works. Removed components' conditional effects are discarded;
+  the new item uses only its own default effect state.
+- Selecting a component while its upgrade is selected is rejected with a visible
+  reason. Separate upgrades sharing a component remain selected together.
+- Missing or ambiguous class references, malformed lists and cycles are diagnosable.
+  Cyclic/ambiguous item identities cannot be added. No missing reference is resolved
+  using an item name.
+- An API record with omitted/null `component_items` declares no component edges;
+  this describes the API graph, not every game exclusivity rule. Legacy saved
+  `formatted_json` without `upgradeRelations` is **unavailable**, not an empty known
+  graph: the UI shows a warning and only applies relationships actually present.
+  Existing database rows are not rewritten or synchronized by this feature.
+
+`tests/fixtures/item-upgrades-6807.public.json` is a version-pinned projection of
+public API relationship fields. Tests cover direct/multi-stage/multiple components,
+sibling branches, duplicates, hidden intermediates, full slots, effect state,
+unresolved references and legacy data. Synthetic mutations are used only for error
+and activation-state cases; no new game damage formula is introduced.
+
 ## Local development
 
 ```bash

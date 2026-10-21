@@ -72,8 +72,26 @@ export interface ItemPropertyTag {
   emphasized: boolean;
 }
 
+export interface UpgradeDiagnostic {
+  code: 'missing-reference' | 'ambiguous-reference' | 'duplicate-id' | 'missing-class-name' | 'invalid-components' | 'cycle';
+  itemId: string;
+  reference?: string;
+}
+
+export interface ItemUpgradeRelations {
+  source: 'api-component-items';
+  status: 'resolved' | 'unresolved';
+  componentClassNames: string[];
+  componentIds: string[];
+  ancestorIds: string[];
+  diagnostics: UpgradeDiagnostic[];
+}
+
 export interface Item {
   id: string;
+  className?: string | null;
+  // Absent in legacy formatted data: do not infer relationships from names.
+  upgradeRelations?: ItemUpgradeRelations;
   name: LocalizedText;
   category: LocalizedText;
   slotType?: 'weapon' | 'vitality' | 'spirit';

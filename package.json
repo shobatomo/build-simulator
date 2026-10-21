@@ -4,7 +4,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "test": "node --test tests/sync-route.test.mjs"
+    "test": "node --test tests/sync-route.test.mjs tests/item-upgrades.test.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.108.2",
