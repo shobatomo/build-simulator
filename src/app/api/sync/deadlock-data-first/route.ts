@@ -2,6 +2,7 @@ import { Buffer } from 'node:buffer';
 import { timingSafeEqual } from 'node:crypto';
 import { NextResponse } from 'next/server';
 import { loadDeadlockData } from '../../_lib/deadlockData';
+import { assetReadMode, versionedGetResponse } from '../../_lib/versionedRead';
 import {
   loadDeadlockDataFromSupabase,
   syncDeadlockDataToSupabase,
@@ -22,6 +23,8 @@ const errorResponse = (error: unknown) => {
 };
 
 export async function GET() {
+  const versioned = await versionedGetResponse();
+  if (versioned) return versioned;
   try {
     const freshData = await loadDeadlockData();
     return NextResponse.json(freshData);
@@ -43,6 +46,14 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  // The legacy writer cannot update the versioned store. Keep it disabled
+  // during rollout, even if legacy sync authorization was already configured.
+  if (assetReadMode() !== 'legacy') {
+    return NextResponse.json(
+      { error: 'データ更新は現在利用できません。', code: 'VERSIONED_SYNC_DISABLED' },
+      { status: 503, headers: { 'Cache-Control': 'no-store' } },
+    );
+  }
   const secret = process.env.DEADLOCK_SYNC_SECRET;
   // Fail closed before contacting the upstream API or Supabase.
   if (!secret || /\s/.test(secret)) {

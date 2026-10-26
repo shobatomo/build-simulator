@@ -22,6 +22,7 @@ function loadRoute({ secret, fresh = fixtureData, stored = fixtureData, syncErro
     return value;
   };
   const modules = {
+    '../../_lib/versionedRead': { versionedGetResponse: async () => null, assetReadMode: () => 'legacy' },
     'node:buffer': { Buffer },
     'node:crypto': { timingSafeEqual },
     'next/server': { NextResponse: { json: (...args) => globalThis.Response.json(...args) } },

@@ -1,0 +1,42 @@
+{
+  "note": "Synthetic contract fixture. Field shapes reflect Assets API investigation; names and values are not game balance data.",
+  "clientVersion": 6807,
+  "steamInfo": { "client_version": 6807, "server_version": 6807, "source_revision": 123, "version_datetime": "2026-10-01T12:00:00", "future_manifest_field": "retained" },
+  "heroesEnglish": [{
+    "id": 1, "class_name": "hero_fixture", "name": "Fixture hero",
+    "description": { "role": "Fixture role", "lore": "Preserve lore" },
+    "starting_stats": { "max_health": { "value": 600, "display_stat_name": "Health" }, "sprint_speed": { "value": 2, "display_stat_name": "Sprint" } },
+    "standard_level_up_upgrades": { "MODIFIER_VALUE_BASE_HEALTH_FROM_LEVEL": 30, "UnknownGrowth": "not-a-number" },
+    "level_info": { "2": { "required_gold": 800, "use_standard_upgrade": false, "bonus_currencies": ["AbilityPoints"] } },
+    "scaling_stats": { "max_health": { "scaling_stat": "spirit", "scale": 0.5 } },
+    "purchase_bonuses": {},
+    "cost_bonuses": { "weapon": [{ "gold_threshold": 3000, "bonus": 10, "percent_on_graph": 0.5 }] },
+    "item_slot_info": { "weapon": { "max_purchases_for_tier": [4, 4, 4, 4] } },
+    "items": { "weapon_primary": "weapon_fixture", "signature1": "ability_fixture" },
+    "future_hero_field": { "nested": [1, "two"] }
+  }],
+  "heroesJapanese": [{ "id": 1, "class_name": "hero_fixture", "name": "検証ヒーロー", "description": { "role": "検証" } }, { "id": 2, "class_name": "hero_japanese_only", "name": "日本語のみ" }],
+  "itemsEnglish": [
+    { "id": 10, "class_name": "weapon_fixture", "name": "Fixture weapon", "type": "weapon", "hero": 1,
+      "weapon_info": { "damage_per_shot": 20, "bullets": 3, "clip_size": 12, "reload_duration": 2, "damage_per_second": 40, "damage_per_second_with_reload": 30, "damage_falloff_start_range": 15, "damage_falloff_end_range": 40, "damage_falloff_end_scale": 0.3, "future_weapon_field": "retained" } },
+    { "id": 20, "class_name": "item_component", "name": "Fixture component", "type": "upgrade", "item_slot_type": "weapon", "item_tier": 1, "cost": 500, "shopable": true, "disabled": false, "component_items": [], "properties": { "BaseAttackDamagePercent": { "value": 10, "postfix": "%", "label": "Weapon damage" } } },
+    { "id": 21, "class_name": "item_upgrade", "name": "Fixture upgrade", "type": "upgrade", "item_slot_type": "weapon", "item_tier": 2, "cost": "1500 souls", "shopable": true, "disabled": true, "component_items": ["item_component"], "imbue": "imbue_active_non_ult", "heroes": [1, 2],
+      "properties": {
+        "BonusFireRate": { "value": "12%", "label": "Fire rate", "display_units": "percent", "conditional": "While active", "usage_flags": ["ConditionallyApplied"], "tooltip_section": "active" },
+        "UnsupportedRankList": { "value": "1/2/3", "label": "Ranks" },
+        "EnemyEffect": { "value": 5, "usage_flags": ["ConditionallyEnemyApplied"], "future_property_field": { "target": "enemy" } }
+      }, "update_time": 123456 },
+    { "id": 30, "class_name": "ability_fixture", "name": "Fixture ability", "type": "ability", "heroes": [1, 2], "ability_type": "signature1",
+      "description": { "desc": "Base description", "t1_desc": "Rank one", "t2_desc": "Rank two", "t3_desc": "Rank three" },
+      "properties": {
+        "Damage": { "value": "100", "label": "Damage", "scale_function": { "class_name": "FixtureScale", "subclass_name": "FixtureLinear", "scaling_stats": ["spirit"], "specific_stat_scale_type": "spirit", "stat_scale": 0.8, "street_brawl_stat_scale": 0.4 }, "css_class": "spirit" },
+        "Duration": { "value": "2.5s", "postfix": "s", "label": "Duration" }
+      },
+      "upgrades": [{ "property_upgrades": [{ "name": "Damage", "bonus": 25, "upgrade_type": "add", "scale_stat_filter": "spirit" }] }, { "property_upgrades": [{ "name": "Duration", "bonus": "-0.5s", "upgrade_type": "add" }] }, { "property_upgrades": [{ "name": "Unknown", "bonus": "special behavior", "upgrade_type": "custom" }] }],
+      "tooltip_details": { "info_sections": [{ "property_upgrade_required": "Rank1", "basic_properties": ["Damage"] }] },
+      "dependent_abilities": ["ability_fixture_child"], "future_ability_field": true }
+  ],
+  "itemsJapanese": [
+    { "id": 30, "class_name": "ability_fixture", "name": "検証アビリティ", "type": "ability", "properties": { "Damage": { "value": 100, "label": "ダメージ" }, "Duration": { "value": "2.5s", "label": "継続時間" }, "JapaneseOnly": { "value": "4", "label": "日本語限定" } } }
+  ]
+}
