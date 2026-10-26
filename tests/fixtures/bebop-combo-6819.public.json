@@ -1,0 +1,1972 @@
+{
+  "clientVersion": 6819,
+  "buildTimestamp": "2026-10-22T16:40:35",
+  "hero": {
+    "id": 15,
+    "class_name": "hero_bebop",
+    "starting_stats": {
+      "max_move_speed": {
+        "value": 6.45,
+        "display_stat_name": "EMaxMoveSpeed"
+      },
+      "sprint_speed": {
+        "value": 4,
+        "display_stat_name": "ESprintSpeed"
+      },
+      "crouch_speed": {
+        "value": 4.75,
+        "display_stat_name": "ECrouchSpeed"
+      },
+      "move_acceleration": {
+        "value": 4,
+        "display_stat_name": "EMoveAcceleration"
+      },
+      "light_melee_damage": {
+        "value": 63,
+        "display_stat_name": "ELightMeleeDamage"
+      },
+      "heavy_melee_damage": {
+        "value": 116,
+        "display_stat_name": "EHeavyMeleeDamage"
+      },
+      "max_health": {
+        "value": 880,
+        "display_stat_name": "EMaxHealth"
+      },
+      "weapon_power": {
+        "value": 0,
+        "display_stat_name": "EWeaponPower"
+      },
+      "reload_speed": {
+        "value": 1,
+        "display_stat_name": "EReloadSpeed"
+      },
+      "weapon_power_scale": {
+        "value": 1,
+        "display_stat_name": "EWeaponPowerScale"
+      },
+      "proc_build_up_rate_scale": {
+        "value": 1,
+        "display_stat_name": "EProcBuildUpRateScale"
+      },
+      "stamina": {
+        "value": 3,
+        "display_stat_name": "EStamina"
+      },
+      "base_health_regen": {
+        "value": 2.5,
+        "display_stat_name": "EBaseHealthRegen"
+      },
+      "stamina_regen_per_second": {
+        "value": 0.181818,
+        "display_stat_name": "EStaminaRegenPerSecond"
+      },
+      "ability_resource_max": {
+        "value": 0,
+        "display_stat_name": "EAbilityResourceMax"
+      },
+      "ability_resource_regen_per_second": {
+        "value": 0,
+        "display_stat_name": "EAbilityResourceRegenPerSecond"
+      },
+      "crit_damage_received_scale": {
+        "value": 1,
+        "display_stat_name": "ECritDamageReceivedScale"
+      },
+      "tech_duration": {
+        "value": 1,
+        "display_stat_name": "ETechDuration"
+      },
+      "tech_range": {
+        "value": 1,
+        "display_stat_name": "ETechRange"
+      },
+      "ground_dash_distance_in_meters": {
+        "value": 10,
+        "display_stat_name": "EGroundDashDistanceInMeters"
+      },
+      "ground_dash_duration": {
+        "value": 0.72,
+        "display_stat_name": "EGroundDashDuration"
+      },
+      "air_dash_distance_in_meters": {
+        "value": 8,
+        "display_stat_name": "EAirDashDistanceInMeters"
+      },
+      "air_dash_duration": {
+        "value": 0.51,
+        "display_stat_name": "EAirDashDuration"
+      },
+      "ooc_health_regen": {
+        "value": 0,
+        "display_stat_name": "EOOCHealthRegen"
+      }
+    },
+    "standard_level_up_upgrades": {
+      "MODIFIER_VALUE_BASE_BULLET_DAMAGE_FROM_LEVEL": 0.115,
+      "MODIFIER_VALUE_BASE_BULLET_DAMAGE_FROM_LEVEL_ALT_FIRE": 0,
+      "MODIFIER_VALUE_BASE_HEALTH_FROM_LEVEL": 52,
+      "MODIFIER_VALUE_BASE_MELEE_DAMAGE_FROM_LEVEL": 1.58,
+      "MODIFIER_VALUE_BONUS_ATTACK_RANGE": 59,
+      "MODIFIER_VALUE_BOON_COUNT": 1,
+      "MODIFIER_VALUE_BULLET_ARMOR_DAMAGE_RESIST": 0.3,
+      "MODIFIER_VALUE_TECH_RESIST": 0,
+      "MODIFIER_VALUE_TECH_DAMAGE_MULTIPLIER": 0,
+      "MODIFIER_VALUE_TECH_POWER": 1.1,
+      "MODIFIER_VALUE_OUT_OF_COMBAT_HEALTH_REGEN": 0
+    },
+    "level_info": {
+      "1": {
+        "bonus_currencies": [
+          "EAbilityUnlocks"
+        ],
+        "required_gold": 0
+      },
+      "2": {
+        "use_standard_upgrade": true,
+        "bonus_currencies": [
+          "EAbilityPoints"
+        ],
+        "required_gold": 200
+      },
+      "3": {
+        "use_standard_upgrade": true,
+        "bonus_currencies": [
+          "EAbilityUnlocks"
+        ],
+        "required_gold": 500
+      },
+      "4": {
+        "use_standard_upgrade": true,
+        "bonus_currencies": [
+          "EAbilityPoints"
+        ],
+        "required_gold": 900
+      },
+      "5": {
+        "use_standard_upgrade": true,
+        "bonus_currencies": [
+          "EAbilityUnlocks"
+        ],
+        "required_gold": 1400
+      },
+      "6": {
+        "use_standard_upgrade": true,
+        "bonus_currencies": [
+          "EAbilityPoints"
+        ],
+        "required_gold": 2000
+      },
+      "7": {
+        "use_standard_upgrade": true,
+        "bonus_currencies": [
+          "EAbilityPoints"
+        ],
+        "required_gold": 2600
+      },
+      "8": {
+        "use_standard_upgrade": true,
+        "bonus_currencies": [
+          "EAbilityUnlocks"
+        ],
+        "required_gold": 3200
+      },
+      "9": {
+        "use_standard_upgrade": true,
+        "bonus_currencies": [
+          "EAbilityPoints"
+        ],
+        "required_gold": 3900
+      },
+      "10": {
+        "use_standard_upgrade": true,
+        "bonus_currencies": [
+          "EAbilityPoints"
+        ],
+        "required_gold": 4600
+      },
+      "11": {
+        "use_standard_upgrade": true,
+        "bonus_currencies": [
+          "EAbilityPoints"
+        ],
+        "required_gold": 5300
+      },
+      "12": {
+        "use_standard_upgrade": true,
+        "bonus_currencies": [
+          "EAbilityPoints"
+        ],
+        "required_gold": 6000
+      },
+      "13": {
+        "use_standard_upgrade": true,
+        "bonus_currencies": [
+          "EAbilityPoints"
+        ],
+        "required_gold": 6800
+      },
+      "14": {
+        "use_standard_upgrade": true,
+        "bonus_currencies": [
+          "EAbilityPoints"
+        ],
+        "required_gold": 7600
+      },
+      "15": {
+        "use_standard_upgrade": true,
+        "bonus_currencies": [
+          "EAbilityPoints"
+        ],
+        "required_gold": 8400
+      },
+      "16": {
+        "use_standard_upgrade": true,
+        "bonus_currencies": [
+          "EAbilityPoints"
+        ],
+        "required_gold": 9200
+      },
+      "17": {
+        "use_standard_upgrade": true,
+        "bonus_currencies": [
+          "EAbilityPoints"
+        ],
+        "required_gold": 10100
+      },
+      "18": {
+        "use_standard_upgrade": true,
+        "bonus_currencies": [
+          "EAbilityPoints"
+        ],
+        "required_gold": 11000
+      },
+      "19": {
+        "use_standard_upgrade": true,
+        "bonus_currencies": [
+          "EAbilityPoints"
+        ],
+        "required_gold": 11900
+      },
+      "20": {
+        "use_standard_upgrade": true,
+        "bonus_currencies": [
+          "EAbilityPoints"
+        ],
+        "required_gold": 12800
+      },
+      "21": {
+        "use_standard_upgrade": true,
+        "bonus_currencies": [
+          "EAbilityPoints"
+        ],
+        "required_gold": 13800
+      },
+      "22": {
+        "use_standard_upgrade": true,
+        "bonus_currencies": [
+          "EAbilityPoints"
+        ],
+        "required_gold": 14900
+      },
+      "23": {
+        "use_standard_upgrade": true,
+        "bonus_currencies": [
+          "EAbilityPoints"
+        ],
+        "required_gold": 16100
+      },
+      "24": {
+        "use_standard_upgrade": true,
+        "bonus_currencies": [
+          "EAbilityPoints"
+        ],
+        "required_gold": 17400
+      },
+      "25": {
+        "use_standard_upgrade": true,
+        "bonus_currencies": [
+          "EAbilityPoints"
+        ],
+        "required_gold": 18900
+      },
+      "26": {
+        "use_standard_upgrade": true,
+        "bonus_currencies": [
+          "EAbilityPoints"
+        ],
+        "required_gold": 20600
+      },
+      "27": {
+        "use_standard_upgrade": true,
+        "bonus_currencies": [
+          "EAbilityPoints"
+        ],
+        "required_gold": 22500
+      },
+      "28": {
+        "use_standard_upgrade": true,
+        "bonus_currencies": [
+          "EAbilityPoints"
+        ],
+        "required_gold": 24600
+      },
+      "29": {
+        "use_standard_upgrade": true,
+        "bonus_currencies": [
+          "EAbilityPoints"
+        ],
+        "required_gold": 26900
+      },
+      "30": {
+        "use_standard_upgrade": true,
+        "bonus_currencies": [
+          "EAbilityPoints"
+        ],
+        "required_gold": 29400
+      },
+      "31": {
+        "use_standard_upgrade": true,
+        "bonus_currencies": [
+          "EAbilityPoints"
+        ],
+        "required_gold": 32100
+      },
+      "32": {
+        "use_standard_upgrade": true,
+        "bonus_currencies": [
+          "EAbilityPoints"
+        ],
+        "required_gold": 35000
+      },
+      "33": {
+        "use_standard_upgrade": true,
+        "bonus_currencies": [
+          "EAbilityPoints"
+        ],
+        "required_gold": 38100
+      },
+      "34": {
+        "use_standard_upgrade": true,
+        "bonus_currencies": [
+          "EAbilityPoints"
+        ],
+        "required_gold": 41400
+      },
+      "35": {
+        "use_standard_upgrade": true,
+        "bonus_currencies": [
+          "EAbilityPoints"
+        ],
+        "required_gold": 44900
+      },
+      "36": {
+        "use_standard_upgrade": true,
+        "bonus_currencies": [
+          "EAbilityPoints"
+        ],
+        "required_gold": 48600
+      }
+    },
+    "cost_bonuses": {
+      "weapon": [
+        {
+          "gold_threshold": 800,
+          "bonus": 9,
+          "percent_on_graph": 7
+        },
+        {
+          "gold_threshold": 1600,
+          "bonus": 12,
+          "percent_on_graph": 7
+        },
+        {
+          "gold_threshold": 2400,
+          "bonus": 15,
+          "percent_on_graph": 8
+        },
+        {
+          "gold_threshold": 3200,
+          "bonus": 18,
+          "percent_on_graph": 8
+        },
+        {
+          "gold_threshold": 4800,
+          "bonus": 46,
+          "percent_on_graph": 9
+        },
+        {
+          "gold_threshold": 6400,
+          "bonus": 54,
+          "percent_on_graph": 9
+        },
+        {
+          "gold_threshold": 8000,
+          "bonus": 62,
+          "percent_on_graph": 10
+        },
+        {
+          "gold_threshold": 11200,
+          "bonus": 74,
+          "percent_on_graph": 10
+        },
+        {
+          "gold_threshold": 16000,
+          "bonus": 86,
+          "percent_on_graph": 10
+        },
+        {
+          "gold_threshold": 22400,
+          "bonus": 100,
+          "percent_on_graph": 11
+        },
+        {
+          "gold_threshold": 28800,
+          "bonus": 115,
+          "percent_on_graph": 11
+        }
+      ],
+      "vitality": [
+        {
+          "gold_threshold": 800,
+          "bonus": 9,
+          "percent_on_graph": 7
+        },
+        {
+          "gold_threshold": 1600,
+          "bonus": 12,
+          "percent_on_graph": 7
+        },
+        {
+          "gold_threshold": 2400,
+          "bonus": 15,
+          "percent_on_graph": 8
+        },
+        {
+          "gold_threshold": 3200,
+          "bonus": 20,
+          "percent_on_graph": 8
+        },
+        {
+          "gold_threshold": 4800,
+          "bonus": 38,
+          "percent_on_graph": 9
+        },
+        {
+          "gold_threshold": 6400,
+          "bonus": 42,
+          "percent_on_graph": 9
+        },
+        {
+          "gold_threshold": 8000,
+          "bonus": 46,
+          "percent_on_graph": 10
+        },
+        {
+          "gold_threshold": 11200,
+          "bonus": 50,
+          "percent_on_graph": 10
+        },
+        {
+          "gold_threshold": 16000,
+          "bonus": 54,
+          "percent_on_graph": 10
+        },
+        {
+          "gold_threshold": 22400,
+          "bonus": 60,
+          "percent_on_graph": 11
+        },
+        {
+          "gold_threshold": 28800,
+          "bonus": 66,
+          "percent_on_graph": 11
+        }
+      ],
+      "spirit": [
+        {
+          "gold_threshold": 800,
+          "bonus": 7,
+          "percent_on_graph": 7
+        },
+        {
+          "gold_threshold": 1600,
+          "bonus": 11,
+          "percent_on_graph": 7
+        },
+        {
+          "gold_threshold": 2400,
+          "bonus": 15,
+          "percent_on_graph": 8
+        },
+        {
+          "gold_threshold": 3200,
+          "bonus": 19,
+          "percent_on_graph": 8
+        },
+        {
+          "gold_threshold": 4800,
+          "bonus": 38,
+          "percent_on_graph": 9
+        },
+        {
+          "gold_threshold": 6400,
+          "bonus": 45,
+          "percent_on_graph": 9
+        },
+        {
+          "gold_threshold": 8000,
+          "bonus": 52,
+          "percent_on_graph": 10
+        },
+        {
+          "gold_threshold": 11200,
+          "bonus": 59,
+          "percent_on_graph": 10
+        },
+        {
+          "gold_threshold": 16000,
+          "bonus": 66,
+          "percent_on_graph": 10
+        },
+        {
+          "gold_threshold": 22400,
+          "bonus": 75,
+          "percent_on_graph": 11
+        },
+        {
+          "gold_threshold": 28800,
+          "bonus": 100,
+          "percent_on_graph": 11
+        }
+      ]
+    }
+  },
+  "items": [
+    {
+      "id": 3764085067,
+      "class_name": "citadel_weapon_bebop_set",
+      "name": "Humble Pie",
+      "type": "weapon",
+      "component_items": [],
+      "properties": {
+        "AbilityCooldown": {
+          "value": "0",
+          "scale_function": {
+            "class_name": "scale_function_single_stat",
+            "subclass_name": "AbilityCooldown_scale_function",
+            "specific_stat_scale_type": "ETechCooldown"
+          }
+        },
+        "AbilityDuration": {
+          "value": "0",
+          "scale_function": {
+            "class_name": "scale_function_single_stat",
+            "subclass_name": "AbilityDuration_scale_function",
+            "specific_stat_scale_type": "ETechDuration"
+          }
+        },
+        "AbilityCastRange": {
+          "value": "0",
+          "scale_function": {
+            "class_name": "scale_function_single_stat",
+            "subclass_name": "AbilityCastRange_scale_function",
+            "specific_stat_scale_type": "ETechRange"
+          }
+        },
+        "AbilityUnitTargetLimit": {
+          "value": "1"
+        },
+        "AbilityCastDelay": {
+          "value": "0"
+        },
+        "AbilityChannelTime": {
+          "value": "0",
+          "scale_function": {
+            "class_name": "scale_function_multi_stats",
+            "subclass_name": "scale_duration",
+            "scaling_stats": [
+              "EChannelDuration",
+              "ETechDuration"
+            ]
+          }
+        },
+        "AbilityPostCastDuration": {
+          "value": "0"
+        },
+        "AbilityCharges": {
+          "value": "0",
+          "scale_function": {
+            "class_name": "scale_function_ability_charges",
+            "subclass_name": "AbilityCharges_scale_function"
+          }
+        },
+        "AbilityCooldownBetweenCharge": {
+          "value": "-1.0",
+          "scale_function": {
+            "class_name": "scale_function_ability_recharge_time",
+            "subclass_name": "scale_function_ability_recharge_time"
+          }
+        },
+        "ChannelMoveSpeed": {
+          "value": "-1"
+        },
+        "AbilityResourceCost": {
+          "value": "0"
+        },
+        "TechPower": {
+          "value": "0"
+        },
+        "WeaponPower": {
+          "value": "0"
+        },
+        "WindUpTime": {
+          "value": "0.3",
+          "scale_function": {
+            "class_name": "scale_function_single_stat",
+            "subclass_name": "WindUpTime_scale_function",
+            "specific_stat_scale_type": "EReloadSpeed"
+          }
+        },
+        "NoWindUpTime": {
+          "value": "0.05",
+          "scale_function": {
+            "class_name": "scale_function_single_stat",
+            "subclass_name": "NoWindUpTime_scale_function",
+            "specific_stat_scale_type": "EReloadSpeed"
+          }
+        }
+      },
+      "upgrades": [],
+      "weapon_info": {
+        "can_zoom": true,
+        "bullet_damage": 4.98,
+        "bullet_gravity_scale": 0.8,
+        "bullet_inherit_shooter_velocity_scale": 0,
+        "bullet_lifetime": 2,
+        "bullet_radius": 3,
+        "bullet_reflect_amount": 1,
+        "bullet_reflect_scale": 0,
+        "bullet_whiz_distance": 80,
+        "crit_bonus_against_npcs": 0,
+        "crit_bonus_end": 1.65,
+        "crit_bonus_end_range": 1500,
+        "crit_bonus_start": 1.65,
+        "crit_bonus_start_range": 500,
+        "cycle_time": 0.084,
+        "intra_burst_cycle_time": 0,
+        "damage_falloff_bias": 0.5,
+        "damage_falloff_end_range": 2000,
+        "damage_falloff_end_scale": 0.1,
+        "damage_falloff_start_range": 787,
+        "damage_falloff_start_scale": 1,
+        "horizontal_punch": 0,
+        "range": 1259.84,
+        "bullet_speed": 20000,
+        "recoil_recovery_speed": 10,
+        "recoil_shot_index_recovery_time_factor": 0.25,
+        "recoil_speed": 1,
+        "reload_move_speed": 10000,
+        "scatter_yaw_scale": 1,
+        "shoot_move_speed_percent": 0.75,
+        "shoot_spread_penalty_decay": 2,
+        "shoot_spread_penalty_decay_delay": 0,
+        "shoot_spread_penalty_per_shot": 0,
+        "shooting_up_spread_penalty": 0,
+        "vertical_punch": 0,
+        "zoom_fov": 35,
+        "zoom_move_speed_percent": 1,
+        "bullets": 1,
+        "burst_shot_count": 1,
+        "clip_size": 66,
+        "spread": 0.05,
+        "standing_spread": 1.5,
+        "reload_duration": 2.35,
+        "horizontal_recoil": {
+          "range": [
+            0,
+            0
+          ],
+          "burst_exponent": 0
+        },
+        "vertical_recoil": {
+          "range": [
+            0,
+            0
+          ],
+          "burst_exponent": 0,
+          "burst_constant": 0,
+          "burst_slope": 0
+        },
+        "bullet_handler_type": "EBulletHandler_Beam",
+        "shots_per_second": 11.904761904761903,
+        "shots_per_second_with_reload": 8.104125736738704,
+        "bullets_per_second": 11.904761904761903,
+        "bullets_per_second_with_reload": 8.104125736738704,
+        "damage_per_second": 59.285714285714285,
+        "damage_per_second_with_reload": 40.358546168958746,
+        "damage_per_shot": 4.98,
+        "damage_per_magazine": 328.68
+      }
+    },
+    {
+      "id": 3089858203,
+      "class_name": "citadel_ability_uppercut",
+      "name": "Exploding Uppercut",
+      "type": "ability",
+      "component_items": [],
+      "properties": {
+        "MeleeHalfAngle": {
+          "value": "60"
+        },
+        "MeleeAttackLength": {
+          "value": "6m",
+          "scale_function": {
+            "class_name": "scale_function_single_stat",
+            "subclass_name": "MeleeAttackLength_scale_function",
+            "specific_stat_scale_type": "EMeleeRange"
+          }
+        },
+        "AbilityCooldown": {
+          "value": 22,
+          "scale_function": {
+            "class_name": "scale_function_single_stat",
+            "subclass_name": "AbilityCooldown_scale_function",
+            "specific_stat_scale_type": "ETechCooldown"
+          }
+        },
+        "AbilityDuration": {
+          "value": "0",
+          "scale_function": {
+            "class_name": "scale_function_single_stat",
+            "subclass_name": "AbilityDuration_scale_function",
+            "specific_stat_scale_type": "ETechDuration"
+          }
+        },
+        "AbilityCastRange": {
+          "value": "0",
+          "scale_function": {
+            "class_name": "scale_function_single_stat",
+            "subclass_name": "AbilityCastRange_scale_function",
+            "specific_stat_scale_type": "ETechRange"
+          }
+        },
+        "AbilityUnitTargetLimit": {
+          "value": "1"
+        },
+        "AbilityCastDelay": {
+          "value": "0"
+        },
+        "AbilityChannelTime": {
+          "value": "0",
+          "scale_function": {
+            "class_name": "scale_function_multi_stats",
+            "subclass_name": "scale_duration",
+            "scaling_stats": [
+              "EChannelDuration",
+              "ETechDuration"
+            ]
+          }
+        },
+        "AbilityPostCastDuration": {
+          "value": "0"
+        },
+        "AbilityCharges": {
+          "value": "0",
+          "scale_function": {
+            "class_name": "scale_function_ability_charges",
+            "subclass_name": "AbilityCharges_scale_function"
+          }
+        },
+        "AbilityCooldownBetweenCharge": {
+          "value": "-1.0",
+          "scale_function": {
+            "class_name": "scale_function_ability_recharge_time",
+            "subclass_name": "scale_function_ability_recharge_time"
+          }
+        },
+        "ChannelMoveSpeed": {
+          "value": "-1"
+        },
+        "AbilityResourceCost": {
+          "value": "0"
+        },
+        "TechPower": {
+          "value": "0"
+        },
+        "WeaponPower": {
+          "value": "0"
+        },
+        "EnemyHeroTossVelocity": {
+          "value": "20m"
+        },
+        "TossVelocity": {
+          "value": "25m"
+        },
+        "MeleeRadius": {
+          "value": "2.5m"
+        },
+        "ForceReductionOnAngleDown": {
+          "value": "0.75"
+        },
+        "UppercutDamage": {
+          "value": "0.01",
+          "scale_function": {
+            "class_name": "scale_function_single_stat",
+            "subclass_name": "UppercutDamage_scale_function",
+            "specific_stat_scale_type": "ELightMeleeDamage",
+            "stat_scale": 1
+          }
+        },
+        "LandingDamage": {
+          "value": 75,
+          "scale_function": {
+            "class_name": "scale_function_tech_damage",
+            "subclass_name": "damage_scale",
+            "stat_scale": 0.6
+          }
+        },
+        "RestoreHookCooldown": {
+          "value": "0"
+        },
+        "StunOnLand": {
+          "value": "0"
+        },
+        "OnLandDamageRadius": {
+          "value": "14m",
+          "scale_function": {
+            "class_name": "scale_function_single_stat",
+            "subclass_name": "OnLandDamageRadius_scale_function",
+            "specific_stat_scale_type": "ETechRadius"
+          }
+        },
+        "UppercutBuffOnHit": {
+          "value": "0",
+          "scale_function": {
+            "class_name": "scale_function_single_stat",
+            "subclass_name": "UppercutBuffOnHit_scale_function",
+            "specific_stat_scale_type": "ETechDuration"
+          }
+        },
+        "BuffGunRangePercent": {
+          "value": "100"
+        },
+        "BuffBaseWeaponPct": {
+          "value": "0"
+        },
+        "ClipSizeBonus": {
+          "value": "0"
+        },
+        "BonusFireRate": {
+          "value": "-14",
+          "scale_function": {
+            "class_name": "scale_function_tech_damage",
+            "subclass_name": "FireRateSlow_scale",
+            "stat_scale": -0.186
+          }
+        },
+        "ExplodeDebuffDuration": {
+          "value": "5",
+          "scale_function": {
+            "class_name": "scale_function_single_stat",
+            "subclass_name": "ExplodeDebuffDuration_scale_function",
+            "specific_stat_scale_type": "ETechDuration"
+          }
+        },
+        "TossDuration": {
+          "value": "0.5"
+        },
+        "TossDurationFriendly": {
+          "value": "0.3"
+        },
+        "MissingHPHeal": {
+          "value": "0",
+          "scale_function": {
+            "class_name": "scale_function_single_stat",
+            "subclass_name": "MissingHPHeal_scale_function",
+            "specific_stat_scale_type": "EHealingOutput"
+          }
+        }
+      },
+      "upgrades": [
+        {
+          "property_upgrades": [
+            {
+              "name": "AbilityCooldown",
+              "bonus": -11
+            }
+          ]
+        },
+        {
+          "property_upgrades": [
+            {
+              "name": "UppercutBuffOnHit",
+              "bonus": "9"
+            },
+            {
+              "name": "BuffBaseWeaponPct",
+              "bonus": "30"
+            }
+          ]
+        },
+        {
+          "property_upgrades": [
+            {
+              "name": "RestoreHookCooldown",
+              "bonus": "1"
+            },
+            {
+              "name": "MissingHPHeal",
+              "bonus": "18"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 2521902222,
+      "class_name": "citadel_ability_sticky_bomb",
+      "name": "Sticky Bomb",
+      "type": "ability",
+      "component_items": [],
+      "properties": {
+        "AbilityCooldown": {
+          "value": 18,
+          "scale_function": {
+            "class_name": "scale_function_single_stat",
+            "subclass_name": "AbilityCooldown_scale_function",
+            "specific_stat_scale_type": "ETechCooldown"
+          }
+        },
+        "AbilityDuration": {
+          "value": "3.5",
+          "scale_function": {
+            "class_name": "scale_function_single_stat",
+            "subclass_name": "AbilityDuration_scale_function",
+            "specific_stat_scale_type": "ETechDuration"
+          }
+        },
+        "AbilityCastRange": {
+          "value": "6m",
+          "scale_function": {
+            "class_name": "scale_function_single_stat",
+            "subclass_name": "AbilityCastRange_scale_function",
+            "specific_stat_scale_type": "ETechRange"
+          }
+        },
+        "AbilityUnitTargetLimit": {
+          "value": "1"
+        },
+        "AbilityCastDelay": {
+          "value": "0"
+        },
+        "AbilityChannelTime": {
+          "value": "0",
+          "scale_function": {
+            "class_name": "scale_function_multi_stats",
+            "subclass_name": "scale_duration",
+            "scaling_stats": [
+              "EChannelDuration",
+              "ETechDuration"
+            ]
+          }
+        },
+        "AbilityPostCastDuration": {
+          "value": "0"
+        },
+        "AbilityCharges": {
+          "value": "0",
+          "scale_function": {
+            "class_name": "scale_function_ability_charges",
+            "subclass_name": "AbilityCharges_scale_function"
+          }
+        },
+        "AbilityCooldownBetweenCharge": {
+          "value": "-1.0",
+          "scale_function": {
+            "class_name": "scale_function_ability_recharge_time",
+            "subclass_name": "scale_function_ability_recharge_time"
+          }
+        },
+        "ChannelMoveSpeed": {
+          "value": "-1"
+        },
+        "AbilityResourceCost": {
+          "value": "0"
+        },
+        "TechPower": {
+          "value": "0"
+        },
+        "WeaponPower": {
+          "value": "0"
+        },
+        "Radius": {
+          "value": "8m",
+          "scale_function": {
+            "class_name": "scale_function_single_stat",
+            "subclass_name": "Radius_scale_function",
+            "specific_stat_scale_type": "ETechRadius"
+          }
+        },
+        "FuseTime": {
+          "value": "3.5"
+        },
+        "KillCheckWindow": {
+          "value": "10.0"
+        },
+        "OnHitDiminish": {
+          "value": "60"
+        },
+        "OnKillDiminish": {
+          "value": "7"
+        },
+        "SelfDamagePercent": {
+          "value": "20"
+        },
+        "Damage": {
+          "value": 85,
+          "scale_function": {
+            "class_name": "scale_function_tech_damage",
+            "subclass_name": "damage_scale",
+            "specific_stat_scale_type": "ETechPower",
+            "stat_scale": 1.5
+          }
+        },
+        "BonusDamagePctPerPlayerKilled": {
+          "value": "2.5",
+          "scale_function": {
+            "class_name": "scale_function_single_stat",
+            "subclass_name": "damage_scale_per_kill",
+            "specific_stat_scale_type": "ETechPower",
+            "stat_scale": 0.01
+          }
+        },
+        "BonusDamagePctPerPlayerHit": {
+          "value": "1.0",
+          "scale_function": {
+            "class_name": "scale_function_single_stat",
+            "subclass_name": "damage_scale_per_hit",
+            "specific_stat_scale_type": "ETechPower",
+            "stat_scale": 0.0015
+          }
+        },
+        "StunTargetOnExplode": {
+          "value": "0",
+          "scale_function": {
+            "class_name": "scale_function_single_stat",
+            "subclass_name": "StunTargetOnExplode_scale_function",
+            "specific_stat_scale_type": "ETechDuration"
+          }
+        },
+        "DebuffDuration": {
+          "value": "0",
+          "scale_function": {
+            "class_name": "scale_function_single_stat",
+            "subclass_name": "DebuffDuration_scale_function",
+            "specific_stat_scale_type": "ETechDuration"
+          }
+        },
+        "OutgoingDamagePercent": {
+          "value": "0"
+        },
+        "MovementSpeedBonus": {
+          "value": "0"
+        },
+        "BonusFireRate": {
+          "value": "0"
+        },
+        "MovementSpeedBonusDuration": {
+          "value": "0",
+          "scale_function": {
+            "class_name": "scale_function_single_stat",
+            "subclass_name": "MovementSpeedBonusDuration_scale_function",
+            "specific_stat_scale_type": "ETechDuration"
+          }
+        },
+        "StatusResistancePercent": {
+          "value": "0"
+        },
+        "TechResist": {
+          "value": "0"
+        }
+      },
+      "upgrades": [
+        {
+          "property_upgrades": [
+            {
+              "name": "AbilityCooldown",
+              "bonus": -8
+            }
+          ]
+        },
+        {
+          "property_upgrades": [
+            {
+              "name": "Damage",
+              "bonus": 85
+            }
+          ]
+        },
+        {
+          "property_upgrades": [
+            {
+              "name": "MovementSpeedBonus",
+              "bonus": "5m"
+            },
+            {
+              "name": "StatusResistancePercent",
+              "bonus": "25"
+            },
+            {
+              "name": "MovementSpeedBonusDuration",
+              "bonus": "6"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 3832675871,
+      "class_name": "citadel_ability_bebop_laser_beam",
+      "name": "Hyper Beam",
+      "type": "ability",
+      "component_items": [],
+      "properties": {
+        "AbilityCooldown": {
+          "value": 120,
+          "scale_function": {
+            "class_name": "scale_function_single_stat",
+            "subclass_name": "AbilityCooldown_scale_function",
+            "specific_stat_scale_type": "ETechCooldown"
+          }
+        },
+        "AbilityDuration": {
+          "value": "0",
+          "scale_function": {
+            "class_name": "scale_function_single_stat",
+            "subclass_name": "AbilityDuration_scale_function",
+            "specific_stat_scale_type": "ETechDuration"
+          }
+        },
+        "AbilityCastRange": {
+          "value": "0",
+          "scale_function": {
+            "class_name": "scale_function_single_stat",
+            "subclass_name": "AbilityCastRange_scale_function",
+            "specific_stat_scale_type": "ETechRange"
+          }
+        },
+        "AbilityUnitTargetLimit": {
+          "value": "1"
+        },
+        "AbilityCastDelay": {
+          "value": "1.0"
+        },
+        "AbilityChannelTime": {
+          "value": "11",
+          "scale_function": {
+            "class_name": "scale_function_multi_stats",
+            "subclass_name": "scale_duration",
+            "scaling_stats": [
+              "EChannelDuration",
+              "ETechDuration"
+            ]
+          }
+        },
+        "AbilityPostCastDuration": {
+          "value": "0"
+        },
+        "AbilityCharges": {
+          "value": "0",
+          "scale_function": {
+            "class_name": "scale_function_ability_charges",
+            "subclass_name": "AbilityCharges_scale_function"
+          }
+        },
+        "AbilityCooldownBetweenCharge": {
+          "value": "-1.0",
+          "scale_function": {
+            "class_name": "scale_function_ability_recharge_time",
+            "subclass_name": "scale_function_ability_recharge_time"
+          }
+        },
+        "ChannelMoveSpeed": {
+          "value": "1.8m"
+        },
+        "AbilityResourceCost": {
+          "value": "0"
+        },
+        "TechPower": {
+          "value": "0"
+        },
+        "WeaponPower": {
+          "value": "0"
+        },
+        "DPS": {
+          "value": 160,
+          "scale_function": {
+            "class_name": "scale_function_tech_damage",
+            "subclass_name": "damage_scale",
+            "specific_stat_scale_type": "ETechPower",
+            "stat_scale": 2.511
+          }
+        },
+        "BeamLength": {
+          "value": "70m",
+          "scale_function": {
+            "class_name": "scale_function_single_stat",
+            "subclass_name": "BeamLength_scale_function",
+            "specific_stat_scale_type": "ETechRange"
+          }
+        },
+        "BeamWidth": {
+          "value": "2.9m"
+        },
+        "BeamCloseRadius": {
+          "value": "5.0m",
+          "scale_function": {
+            "class_name": "scale_function_single_stat",
+            "subclass_name": "BeamCloseRadius_scale_function",
+            "specific_stat_scale_type": "ETechRange"
+          }
+        },
+        "BeamEndRadius": {
+          "value": "4.0m",
+          "scale_function": {
+            "class_name": "scale_function_single_stat",
+            "subclass_name": "BeamEndRadius_scale_function",
+            "specific_stat_scale_type": "ETechRange"
+          }
+        },
+        "BeamCloseDamagePercent": {
+          "value": "75"
+        },
+        "Interval": {
+          "value": "0.1"
+        },
+        "TrackingSpeed": {
+          "value": "55"
+        },
+        "ZoomTime": {
+          "value": "0.1"
+        },
+        "ZoomBias": {
+          "value": "0.5"
+        },
+        "FallSpeedMax": {
+          "value": "1"
+        },
+        "AirSpeedMax": {
+          "value": "70"
+        },
+        "BeamLifesteal": {
+          "value": "0",
+          "scale_function": {
+            "class_name": "scale_function_single_stat",
+            "subclass_name": "BeamLifesteal_scale_function",
+            "specific_stat_scale_type": "EHealingOutput"
+          }
+        },
+        "BeamLifestealNonHeroPercent": {
+          "value": "0"
+        },
+        "SlowTargetDuration": {
+          "value": "0.5"
+        },
+        "SlowPercent": {
+          "value": "20"
+        },
+        "GroundDashReductionPercent": {
+          "value": "-36"
+        }
+      },
+      "upgrades": [
+        {
+          "property_upgrades": [
+            {
+              "name": "AbilityCooldown",
+              "bonus": -20
+            }
+          ]
+        },
+        {
+          "property_upgrades": [
+            {
+              "name": "DPS",
+              "bonus": 108
+            }
+          ]
+        },
+        {
+          "property_upgrades": [
+            {
+              "name": "BeamLifesteal",
+              "bonus": "65"
+            },
+            {
+              "name": "BeamLifestealNonHeroPercent",
+              "bonus": "20"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 1928108461,
+      "class_name": "citadel_ability_hook",
+      "name": "Grapple Arm",
+      "type": "ability",
+      "component_items": [],
+      "properties": {
+        "AbilityCooldown": {
+          "value": 23,
+          "scale_function": {
+            "class_name": "scale_function_single_stat",
+            "subclass_name": "AbilityCooldown_scale_function",
+            "specific_stat_scale_type": "ETechCooldown"
+          }
+        },
+        "AbilityDuration": {
+          "value": "0",
+          "scale_function": {
+            "class_name": "scale_function_single_stat",
+            "subclass_name": "AbilityDuration_scale_function",
+            "specific_stat_scale_type": "ETechDuration"
+          }
+        },
+        "AbilityCastRange": {
+          "value": "30m",
+          "scale_function": {
+            "class_name": "scale_function_single_stat",
+            "subclass_name": "AbilityCastRange_scale_function",
+            "specific_stat_scale_type": "ETechRange"
+          }
+        },
+        "AbilityUnitTargetLimit": {
+          "value": "1"
+        },
+        "AbilityCastDelay": {
+          "value": "0.1"
+        },
+        "AbilityChannelTime": {
+          "value": "0",
+          "scale_function": {
+            "class_name": "scale_function_multi_stats",
+            "subclass_name": "scale_duration",
+            "scaling_stats": [
+              "EChannelDuration",
+              "ETechDuration"
+            ]
+          }
+        },
+        "AbilityPostCastDuration": {
+          "value": "0.2"
+        },
+        "AbilityCharges": {
+          "value": "0",
+          "scale_function": {
+            "class_name": "scale_function_ability_charges",
+            "subclass_name": "AbilityCharges_scale_function"
+          }
+        },
+        "AbilityCooldownBetweenCharge": {
+          "value": "-1.0",
+          "scale_function": {
+            "class_name": "scale_function_ability_recharge_time",
+            "subclass_name": "scale_function_ability_recharge_time"
+          }
+        },
+        "ChannelMoveSpeed": {
+          "value": "-1"
+        },
+        "AbilityResourceCost": {
+          "value": "0"
+        },
+        "TechPower": {
+          "value": "0"
+        },
+        "WeaponPower": {
+          "value": "0"
+        },
+        "HookingSlowSpeedLimit": {
+          "value": "5"
+        },
+        "Damage": {
+          "value": "0",
+          "scale_function": {
+            "class_name": "scale_function_single_stat",
+            "subclass_name": "Damage_scale_function",
+            "specific_stat_scale_type": "ELightMeleeDamage",
+            "stat_scale": 0.7
+          }
+        },
+        "SlowPercent": {
+          "value": "72"
+        },
+        "RestrictionDuration": {
+          "value": "0.5",
+          "scale_function": {}
+        },
+        "EndOfHookMoveSpeedBonus": {
+          "value": "0m"
+        },
+        "ResetCooldownOnFriendlyHook": {
+          "value": "0"
+        },
+        "FriendlyHookIgnoreRange": {
+          "value": "8m"
+        },
+        "BulletAmp": {
+          "value": "0"
+        },
+        "BulletAmpDuration": {
+          "value": "0",
+          "scale_function": {
+            "class_name": "scale_function_single_stat",
+            "subclass_name": "BulletAmp_scale_function",
+            "specific_stat_scale_type": "ETechDuration"
+          }
+        },
+        "CancelHookDuration": {
+          "value": "0.2"
+        },
+        "HookImpactDelay": {
+          "value": "0.5"
+        }
+      },
+      "upgrades": [
+        {
+          "property_upgrades": [
+            {
+              "name": "BulletAmp",
+              "bonus": "20"
+            },
+            {
+              "name": "BulletAmpDuration",
+              "bonus": "6"
+            }
+          ]
+        },
+        {
+          "property_upgrades": [
+            {
+              "name": "AbilityCastRange",
+              "bonus": "30m"
+            }
+          ]
+        },
+        {
+          "property_upgrades": [
+            {
+              "name": "AbilityCooldown",
+              "bonus": -11.5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 3633614685,
+      "class_name": "upgrade_health",
+      "name": "Extra Health",
+      "type": "upgrade",
+      "cost": 800,
+      "component_items": [],
+      "properties": {
+        "AbilityCooldown": {
+          "value": "0",
+          "scale_function": {
+            "class_name": "scale_function_single_stat",
+            "subclass_name": "AbilityCooldown_scale_function",
+            "specific_stat_scale_type": "EItemCooldown"
+          }
+        },
+        "AbilityDuration": {
+          "value": "0",
+          "scale_function": {
+            "class_name": "scale_function_single_stat",
+            "subclass_name": "AbilityDuration_scale_function",
+            "specific_stat_scale_type": "ETechDuration"
+          }
+        },
+        "AbilityCastRange": {
+          "value": "0",
+          "scale_function": {
+            "class_name": "scale_function_single_stat",
+            "subclass_name": "AbilityCastRange_scale_function",
+            "specific_stat_scale_type": "ETechRange"
+          }
+        },
+        "AbilityUnitTargetLimit": {
+          "value": "1"
+        },
+        "AbilityCastDelay": {
+          "value": "0"
+        },
+        "AbilityChannelTime": {
+          "value": "0",
+          "scale_function": {
+            "class_name": "scale_function_multi_stats",
+            "subclass_name": "scale_duration",
+            "scaling_stats": [
+              "EChannelDuration",
+              "ETechDuration"
+            ]
+          }
+        },
+        "AbilityPostCastDuration": {
+          "value": "0"
+        },
+        "AbilityCharges": {
+          "value": "0",
+          "scale_function": {
+            "class_name": "scale_function_ability_charges",
+            "subclass_name": "AbilityCharges_scale_function"
+          }
+        },
+        "AbilityCooldownBetweenCharge": {
+          "value": "-1.0",
+          "scale_function": {
+            "class_name": "scale_function_ability_recharge_time",
+            "subclass_name": "scale_function_ability_recharge_time"
+          }
+        },
+        "ChannelMoveSpeed": {
+          "value": "-1"
+        },
+        "AbilityResourceCost": {
+          "value": "0"
+        },
+        "TechPower": {
+          "value": "0"
+        },
+        "WeaponPower": {
+          "value": "0"
+        },
+        "BonusHealth": {
+          "value": "210"
+        },
+        "BaseAttackDamagePercent": {}
+      },
+      "upgrades": [
+        {
+          "property_upgrades": [
+            {
+              "name": "BonusHealth",
+              "bonus": "115"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 2163598980,
+      "class_name": "upgrade_tech_purge",
+      "name": "Spirit Resilience",
+      "type": "upgrade",
+      "cost": 3200,
+      "component_items": [],
+      "properties": {
+        "AbilityCooldown": {
+          "value": "0",
+          "scale_function": {
+            "class_name": "scale_function_single_stat",
+            "subclass_name": "AbilityCooldown_scale_function",
+            "specific_stat_scale_type": "EItemCooldown"
+          }
+        },
+        "AbilityDuration": {
+          "value": "0",
+          "scale_function": {
+            "class_name": "scale_function_single_stat",
+            "subclass_name": "AbilityDuration_scale_function",
+            "specific_stat_scale_type": "ETechDuration"
+          }
+        },
+        "AbilityCastRange": {
+          "value": "0",
+          "scale_function": {
+            "class_name": "scale_function_single_stat",
+            "subclass_name": "AbilityCastRange_scale_function",
+            "specific_stat_scale_type": "ETechRange"
+          }
+        },
+        "AbilityUnitTargetLimit": {
+          "value": "1"
+        },
+        "AbilityCastDelay": {
+          "value": "0"
+        },
+        "AbilityChannelTime": {
+          "value": "0",
+          "scale_function": {
+            "class_name": "scale_function_multi_stats",
+            "subclass_name": "scale_duration",
+            "scaling_stats": [
+              "EChannelDuration",
+              "ETechDuration"
+            ]
+          }
+        },
+        "AbilityPostCastDuration": {
+          "value": "0"
+        },
+        "AbilityCharges": {
+          "value": "0",
+          "scale_function": {
+            "class_name": "scale_function_ability_charges",
+            "subclass_name": "AbilityCharges_scale_function"
+          }
+        },
+        "AbilityCooldownBetweenCharge": {
+          "value": "-1.0",
+          "scale_function": {
+            "class_name": "scale_function_ability_recharge_time",
+            "subclass_name": "scale_function_ability_recharge_time"
+          }
+        },
+        "ChannelMoveSpeed": {
+          "value": "-1"
+        },
+        "AbilityResourceCost": {
+          "value": "0"
+        },
+        "TechPower": {
+          "value": "0"
+        },
+        "WeaponPower": {
+          "value": "0"
+        },
+        "TechResist": {
+          "value": "30"
+        },
+        "HealthThreshold": {
+          "value": "50"
+        },
+        "TechResistBelowThreshold": {
+          "value": "15"
+        },
+        "OutOfCombatHealthRegen": {
+          "value": "3"
+        }
+      },
+      "upgrades": [
+        {
+          "property_upgrades": [
+            {
+              "name": "TechResist",
+              "bonus": "10"
+            },
+            {
+              "name": "TechResistBelowThreshold",
+              "bonus": "10"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 3140772621,
+      "class_name": "upgrade_improved_bullet_armor",
+      "name": "Bullet Resilience",
+      "type": "upgrade",
+      "cost": 3200,
+      "component_items": [],
+      "properties": {
+        "AbilityCooldown": {
+          "value": "0",
+          "scale_function": {
+            "class_name": "scale_function_single_stat",
+            "subclass_name": "AbilityCooldown_scale_function",
+            "specific_stat_scale_type": "EItemCooldown"
+          }
+        },
+        "AbilityDuration": {
+          "value": "0",
+          "scale_function": {
+            "class_name": "scale_function_single_stat",
+            "subclass_name": "AbilityDuration_scale_function",
+            "specific_stat_scale_type": "ETechDuration"
+          }
+        },
+        "AbilityCastRange": {
+          "value": "0",
+          "scale_function": {
+            "class_name": "scale_function_single_stat",
+            "subclass_name": "AbilityCastRange_scale_function",
+            "specific_stat_scale_type": "ETechRange"
+          }
+        },
+        "AbilityUnitTargetLimit": {
+          "value": "1"
+        },
+        "AbilityCastDelay": {
+          "value": "0"
+        },
+        "AbilityChannelTime": {
+          "value": "0",
+          "scale_function": {
+            "class_name": "scale_function_multi_stats",
+            "subclass_name": "scale_duration",
+            "scaling_stats": [
+              "EChannelDuration",
+              "ETechDuration"
+            ]
+          }
+        },
+        "AbilityPostCastDuration": {
+          "value": "0"
+        },
+        "AbilityCharges": {
+          "value": "0",
+          "scale_function": {
+            "class_name": "scale_function_ability_charges",
+            "subclass_name": "AbilityCharges_scale_function"
+          }
+        },
+        "AbilityCooldownBetweenCharge": {
+          "value": "-1.0",
+          "scale_function": {
+            "class_name": "scale_function_ability_recharge_time",
+            "subclass_name": "scale_function_ability_recharge_time"
+          }
+        },
+        "ChannelMoveSpeed": {
+          "value": "-1"
+        },
+        "AbilityResourceCost": {
+          "value": "0"
+        },
+        "TechPower": {
+          "value": "0"
+        },
+        "WeaponPower": {
+          "value": "0"
+        },
+        "BulletResist": {
+          "value": "30"
+        },
+        "HealthThreshold": {
+          "value": "50"
+        },
+        "BulletResistBelowThreshold": {
+          "value": "15"
+        },
+        "OutOfCombatHealthRegen": {
+          "value": "3"
+        }
+      },
+      "upgrades": [
+        {
+          "property_upgrades": [
+            {
+              "name": "BulletResist",
+              "bonus": "10"
+            },
+            {
+              "name": "BulletResistBelowThreshold",
+              "bonus": "10"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 968099481,
+      "class_name": "upgrade_improved_spirit",
+      "name": "Extra Spirit",
+      "type": "upgrade",
+      "cost": 800,
+      "component_items": [],
+      "properties": {
+        "AbilityCooldown": {
+          "value": "0",
+          "scale_function": {
+            "class_name": "scale_function_single_stat",
+            "subclass_name": "AbilityCooldown_scale_function",
+            "specific_stat_scale_type": "EItemCooldown"
+          }
+        },
+        "AbilityDuration": {
+          "value": "0",
+          "scale_function": {
+            "class_name": "scale_function_single_stat",
+            "subclass_name": "AbilityDuration_scale_function",
+            "specific_stat_scale_type": "ETechDuration"
+          }
+        },
+        "AbilityCastRange": {
+          "value": "0",
+          "scale_function": {
+            "class_name": "scale_function_single_stat",
+            "subclass_name": "AbilityCastRange_scale_function",
+            "specific_stat_scale_type": "ETechRange"
+          }
+        },
+        "AbilityUnitTargetLimit": {
+          "value": "1"
+        },
+        "AbilityCastDelay": {
+          "value": "0"
+        },
+        "AbilityChannelTime": {
+          "value": "0",
+          "scale_function": {
+            "class_name": "scale_function_multi_stats",
+            "subclass_name": "scale_duration",
+            "scaling_stats": [
+              "EChannelDuration",
+              "ETechDuration"
+            ]
+          }
+        },
+        "AbilityPostCastDuration": {
+          "value": "0"
+        },
+        "AbilityCharges": {
+          "value": "0",
+          "scale_function": {
+            "class_name": "scale_function_ability_charges",
+            "subclass_name": "AbilityCharges_scale_function"
+          }
+        },
+        "AbilityCooldownBetweenCharge": {
+          "value": "-1.0",
+          "scale_function": {
+            "class_name": "scale_function_ability_recharge_time",
+            "subclass_name": "scale_function_ability_recharge_time"
+          }
+        },
+        "ChannelMoveSpeed": {
+          "value": "-1"
+        },
+        "AbilityResourceCost": {
+          "value": "0"
+        },
+        "TechPower": {
+          "value": "10"
+        },
+        "WeaponPower": {
+          "value": "0"
+        },
+        "BonusHealthRegen": {}
+      },
+      "upgrades": [
+        {
+          "property_upgrades": [
+            {
+              "name": "TechPower",
+              "bonus": "10"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 7409189,
+      "class_name": "upgrade_soaring_spirit",
+      "name": "Improved Spirit",
+      "type": "upgrade",
+      "cost": 1600,
+      "component_items": [
+        "upgrade_improved_spirit"
+      ],
+      "properties": {
+        "AbilityCooldown": {
+          "value": "0",
+          "scale_function": {
+            "class_name": "scale_function_single_stat",
+            "subclass_name": "AbilityCooldown_scale_function",
+            "specific_stat_scale_type": "EItemCooldown"
+          }
+        },
+        "AbilityDuration": {
+          "value": "0",
+          "scale_function": {
+            "class_name": "scale_function_single_stat",
+            "subclass_name": "AbilityDuration_scale_function",
+            "specific_stat_scale_type": "ETechDuration"
+          }
+        },
+        "AbilityCastRange": {
+          "value": "0",
+          "scale_function": {
+            "class_name": "scale_function_single_stat",
+            "subclass_name": "AbilityCastRange_scale_function",
+            "specific_stat_scale_type": "ETechRange"
+          }
+        },
+        "AbilityUnitTargetLimit": {
+          "value": "1"
+        },
+        "AbilityCastDelay": {
+          "value": "0"
+        },
+        "AbilityChannelTime": {
+          "value": "0",
+          "scale_function": {
+            "class_name": "scale_function_multi_stats",
+            "subclass_name": "scale_duration",
+            "scaling_stats": [
+              "EChannelDuration",
+              "ETechDuration"
+            ]
+          }
+        },
+        "AbilityPostCastDuration": {
+          "value": "0"
+        },
+        "AbilityCharges": {
+          "value": "0",
+          "scale_function": {
+            "class_name": "scale_function_ability_charges",
+            "subclass_name": "AbilityCharges_scale_function"
+          }
+        },
+        "AbilityCooldownBetweenCharge": {
+          "value": "-1.0",
+          "scale_function": {
+            "class_name": "scale_function_ability_recharge_time",
+            "subclass_name": "scale_function_ability_recharge_time"
+          }
+        },
+        "ChannelMoveSpeed": {
+          "value": "-1"
+        },
+        "AbilityResourceCost": {
+          "value": "0"
+        },
+        "TechPower": {
+          "value": "18"
+        },
+        "WeaponPower": {
+          "value": "0"
+        },
+        "BonusHealthRegen": {},
+        "BonusSprintSpeed": {
+          "value": "1m"
+        },
+        "BonusHealth": {
+          "value": "75"
+        },
+        "OutOfCombatHealthRegen": {
+          "value": "1.5"
+        }
+      },
+      "upgrades": [
+        {
+          "property_upgrades": [
+            {
+              "name": "TechPower",
+              "bonus": "22"
+            },
+            {
+              "name": "OutOfCombatHealthRegen",
+              "bonus": "3"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

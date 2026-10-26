@@ -13,6 +13,7 @@ import {
     type ReactNode,
 } from "react";
 import { createPortal } from "react-dom";
+import Link from "next/link";
 import { X } from "lucide-react";
 import { fetchDeadlockData } from "./api/deadlockApi";
 import type {
@@ -811,6 +812,7 @@ export default function App() {
                     <h1>{t.title}</h1>
                     {t.subtitle && <p className="subtitle">{t.subtitle}</p>}
                     {t.helper && <p className="intro-helper">{t.helper}</p>}
+                    <p className="intro-helper"><Link href="/combat">{locale === "ja" ? "Bebop コンボ試算（試験版）を開く →" : "Open Bebop Combo Lab (Experimental · Japanese) →"}</Link></p>
                     {t.pills.length > 0 && (
                         <div className="intro-pills" aria-label={t.items}>
                             {t.pills.map((pill) => (
