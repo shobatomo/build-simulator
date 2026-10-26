@@ -30,7 +30,7 @@ const failure=(status,code='fixture-error')=>globalThis.Response.json({code,mess
 test('real SDK serializes read/publication RPC arguments and round-trips through an in-memory DB', async()=>{
   const db=await assetDatabase();
   try {
-    await db.exec('set role service_role;');
+    // Administrative full-bundle transport is tested as owner, never service_role.
     const {repository,calls}=mockTransport(async(name,args)=>json(name==='read_deadlock_asset_release'
       ?await readActive(db):await publish(db,{snapshot:args.p_snapshot,catalog:args.p_catalog},args.p_expected_revision)));
     assert.equal(await repository.readActive(),null);
@@ -64,7 +64,7 @@ test('invalid candidate is rejected before the SDK transport is invoked',async()
 test('lost POST response is reconciled by a read and never publishes twice',async()=>{
   const db=await assetDatabase();
   try {
-    await publish(db,original,null);await db.exec('set role service_role;');
+    await publish(db,original,null);
     const {repository,calls}=mockTransport(async(name,args)=>{
       if(name==='read_deadlock_asset_release') return json(await readActive(db));
       await publish(db,{snapshot:args.p_snapshot,catalog:args.p_catalog},args.p_expected_revision);

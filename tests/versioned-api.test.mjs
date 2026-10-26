@@ -4,26 +4,33 @@ import { URL } from 'node:url';
 import { createClient } from '@supabase/supabase-js';
 import { loadTs, plain } from './helpers/load-ts.mjs';
 import { snapshotFixture } from './helpers/bebop-fixture.mjs';
-import { assetDatabase, publish } from './helpers/asset-database.mjs';
+import { assetDatabase } from './helpers/asset-database.mjs';
+import { publishDisplay, readDisplay } from './helpers/display-database.mjs';
 
 const { prepareAssetBundle } = loadTs('server/versionedAssetStore.ts');
 const { loadVersionedDisplayData } = loadTs('server/versionedDisplayData.ts');
 const formatter = loadTs('app/api/_lib/deadlockData.ts');
 const active = { ...plain(prepareAssetBundle(await snapshotFixture())), revision: 1 };
+const { prepareDisplayProjection } = loadTs('server/displayProjection.ts');
+const display = { ...plain(await prepareDisplayProjection(active)), revision: 1,
+  snapshotHash: active.snapshot.contentHash, clientVersion: 6819, normalizerVersion: '0.2.0' };
 const routePaths = ['sync/deadlock-data-first', 'heroes', 'items'];
 const legacy = { heroes: [{ id: 'legacy-hero' }], items: [{ id: 'legacy-item' }], assets: {} };
 
-function routeHarness(path, { mode, data = active, failure, read } = {}) {
+function routeHarness(path, { mode, data = display, failure, read } = {}) {
   const calls = { clients: 0, rpc: [], legacy: 0, writes: 0 };
   const client = createClient('https://asset-fixture.invalid', 'fixture-only-not-a-credential', {
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
     global: { fetch: async (input, init) => {
-      assert.equal(new URL(input).pathname, '/rest/v1/rpc/read_deadlock_asset_release');
+      assert.equal(new URL(input).pathname, '/rest/v1/rpc/read_deadlock_display_release');
       assert.equal(init.method, 'POST'); // RPC transport; SQL function is read-only.
-      assert.deepEqual(JSON.parse(init.body), {});
+      const collection = path.startsWith('sync') ? 'all' : path;
+      assert.deepEqual(JSON.parse(init.body), { p_collection: collection, p_projection_version: 'legacy-display-v1' });
       calls.rpc.push('read');
       if (failure) return globalThis.Response.json({ message: 'sensitive-test-detail', code: 'fixture-error' }, { status: failure });
-      return globalThis.Response.json(read ? await read() : data);
+      const result = read ? await read(collection) : data;
+      return globalThis.Response.json(result?.parts ? { ...result,
+        parts: result.parts.filter(part => collection === 'all' || [collection, 'metadata'].includes(part.section)) } : result);
     } },
   });
   const readLegacy = async () => { calls.legacy++; return legacy; };
@@ -150,12 +157,12 @@ test('versioned/invalid read modes refuse legacy sync POST even with valid fixtu
 });
 
 test('memory SQL publication -> real SDK with mock transport -> existing API response uses a single saved release', async () => {
-  const db = await assetDatabase();
+  const db = await assetDatabase({ display: true });
   try {
-    await publish(db, active, null);
-    const route = routeHarness(routePaths[0], { mode: 'versioned', read: async () => {
+    await publishDisplay(db, active, null);
+    const route = routeHarness(routePaths[0], { mode: 'versioned', read: async (collection) => {
       await db.exec('set role service_role');
-      return (await db.query('select public.read_deadlock_asset_release() as data')).rows[0].data;
+      return readDisplay(db, collection);
     } });
     const response = await route.GET();
     assert.equal(response.status, 200);

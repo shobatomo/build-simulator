@@ -4,6 +4,7 @@ import {
     useCallback,
     useEffect,
     useLayoutEffect,
+    useId,
     useMemo,
     useRef,
     useState,
@@ -38,6 +39,7 @@ type PopoverButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 };
 
 function PopoverButton({ tooltip, ...buttonProps }: PopoverButtonProps) {
+    const tooltipId = useId();
     const buttonRef = useRef<HTMLButtonElement>(null);
     const popoverRef = useRef<HTMLDivElement>(null);
     const [isOpen, setIsOpen] = useState(false);
@@ -111,9 +113,15 @@ function PopoverButton({ tooltip, ...buttonProps }: PopoverButtonProps) {
             <button
                 {...buttonProps}
                 ref={buttonRef}
-                onMouseEnter={() => setIsOpen(true)}
+                aria-describedby={isOpen ? tooltipId : undefined}
+                onMouseEnter={() => { if (window.matchMedia("(hover: hover)").matches) setIsOpen(true); }}
                 onMouseLeave={() => setIsOpen(false)}
-                onFocus={() => setIsOpen(true)}
+                onFocus={(event) => setIsOpen(event.currentTarget.matches(":focus-visible"))}
+                onPointerDown={(event) => { if (event.pointerType === "touch") setIsOpen(false); }}
+                onKeyDown={(event) => {
+                    if (event.key === "Escape" && isOpen) { event.stopPropagation(); setIsOpen(false); }
+                    buttonProps.onKeyDown?.(event);
+                }}
                 onBlur={() => setIsOpen(false)}
             />
             {isOpen &&
@@ -121,6 +129,7 @@ function PopoverButton({ tooltip, ...buttonProps }: PopoverButtonProps) {
                     <div
                         ref={popoverRef}
                         className={`hover-detail ${position?.placement === "below" ? "is-below" : "is-above"}`}
+                        id={tooltipId}
                         role="tooltip"
                         style={popoverStyle}
                     >
@@ -129,6 +138,53 @@ function PopoverButton({ tooltip, ...buttonProps }: PopoverButtonProps) {
                     document.body,
                 )}
         </>
+    );
+}
+
+
+function Modal({ title, closeLabel, onClose, children }: {
+    title: string;
+    closeLabel: string;
+    onClose: () => void;
+    children: ReactNode;
+}) {
+    const ref = useRef<HTMLDialogElement>(null);
+    const titleId = useId();
+    useEffect(() => {
+        const dialog = ref.current;
+        const previousFocus = document.activeElement as HTMLElement | null;
+        const previousOverflow = document.body.style.overflow;
+        dialog?.showModal();
+        document.body.style.overflow = "hidden";
+        return () => {
+            dialog?.close();
+            document.body.style.overflow = previousOverflow;
+            previousFocus?.focus({ preventScroll: true });
+        };
+    }, []);
+    return (
+        <dialog ref={ref} className="modal" aria-labelledby={titleId}
+            onCancel={(event) => { event.preventDefault(); onClose(); }}
+            onKeyDown={(event) => {
+                if (event.key !== "Tab") return;
+                const controls = Array.from(event.currentTarget.querySelectorAll<HTMLElement>(
+                    'button:not([disabled]), input:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])',
+                ));
+                const first = controls[0];
+                const last = controls[controls.length - 1];
+                if (event.shiftKey && document.activeElement === first) {
+                    event.preventDefault(); last?.focus();
+                } else if (!event.shiftKey && document.activeElement === last) {
+                    event.preventDefault(); first?.focus();
+                }
+            }}
+            onClick={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+            <div className="modal-heading">
+                <h2 id={titleId}>{title}</h2>
+                <button type="button" onClick={onClose} aria-label={closeLabel}><X aria-hidden="true" /></button>
+            </div>
+            <div className="modal-content">{children}</div>
+        </dialog>
     );
 }
 
@@ -353,11 +409,13 @@ export default function App() {
     const [heroId, setHeroId] = useState<string>();
     const [level, setLevel] = useState(1);
     const [isHeroModalOpen, setHeroModalOpen] = useState(false);
+    const [inspectedItemId, setInspectedItemId] = useState<string>();
+    const itemBrowsePosition = useRef<number | null>(null);
+    const itemBrowseControl = useRef<HTMLElement | null>(null);
     const [selection, setSelection] = useState<ItemSelectionState>({ items: [], notice: null });
     const selectedItems = selection.items;
     const [isLoading, setLoading] = useState(true);
     const [error, setError] = useState<string>();
-    const modalRef = useRef<HTMLDivElement>(null);
     const t = copy[locale];
     const upgradeIndex = useMemo(() => indexItemUpgrades(items), [items]);
 
@@ -394,48 +452,7 @@ export default function App() {
         void loadBuildData();
     }, []);
 
-    useEffect(() => {
-        if (!isHeroModalOpen) return;
-
-        const previousFocus = document.activeElement as HTMLElement | null;
-        const focusableSelector =
-            'button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])';
-        const focusFirstControl = () =>
-            modalRef.current
-                ?.querySelector<HTMLElement>(focusableSelector)
-                ?.focus();
-        const frame = window.requestAnimationFrame(focusFirstControl);
-        const handleKeyDown = (event: KeyboardEvent) => {
-            if (event.key === "Escape") {
-                setHeroModalOpen(false);
-                return;
-            }
-            if (event.key !== "Tab" || !modalRef.current) return;
-
-            const controls = Array.from(
-                modalRef.current.querySelectorAll<HTMLElement>(
-                    focusableSelector,
-                ),
-            );
-            if (controls.length === 0) return;
-            const first = controls[0];
-            const last = controls[controls.length - 1];
-            if (event.shiftKey && document.activeElement === first) {
-                event.preventDefault();
-                last.focus();
-            } else if (!event.shiftKey && document.activeElement === last) {
-                event.preventDefault();
-                first.focus();
-            }
-        };
-
-        document.addEventListener("keydown", handleKeyDown);
-        return () => {
-            window.cancelAnimationFrame(frame);
-            document.removeEventListener("keydown", handleKeyDown);
-            previousFocus?.focus();
-        };
-    }, [isHeroModalOpen]);
+    useEffect(() => { document.documentElement.lang = locale; }, [locale]);
 
     const hero = heroes.find((candidate) => candidate.id === heroId);
     const stats = useMemo(
@@ -577,6 +594,8 @@ export default function App() {
             .filter(Boolean)
             .join(" / ");
 
+    const inspectedItem = items.find((item) => item.id === inspectedItemId);
+
     const formatItemDetails = (item: Item) =>
         `${item.name[locale]} / ${item.category[locale]} / ${t.price}: ${item.price}`;
 
@@ -627,17 +646,104 @@ export default function App() {
             ),
         }));
     };
+    const renderItemDetails = (item: Item) => (
+<>
+                                                <strong>
+                                                    {item.name[locale]}
+                                                </strong>
+                                                {item.upgradeRelations?.componentIds.length ? <small>{locale === "ja" ? "構成元" : "Components"}: {itemNames(item.upgradeRelations.componentIds)}</small> : null}
+                                                {upgradeIndex.directUpgradesByComponentId.get(item.id)?.size ? <small>{locale === "ja" ? "アップグレード先" : "Upgrades to"}: {itemNames([...upgradeIndex.directUpgradesByComponentId.get(item.id)!])}</small> : null}
+                                                {!item.upgradeRelations || item.upgradeRelations.status === "unresolved" ? <small>{locale === "ja" ? "構成関係の一部または全部が未確認です。" : "Some or all component relationships are unverified."}</small> : null}
+                                                <small>
+                                                    {item.slotType &&
+                                                        assetIcons.categories[
+                                                            item.slotType
+                                                        ] && (
+                                                            <img
+                                                                className="inline-icon"
+                                                                src={
+                                                                    assetIcons
+                                                                        .categories[
+                                                                        item
+                                                                            .slotType
+                                                                    ]
+                                                                }
+                                                                alt=""
+                                                            />
+                                                        )}
+                                                    {item.category[locale]} ·{" "}
+                                                    {assetIcons.price && (
+                                                        <img
+                                                            className="inline-icon"
+                                                            src={
+                                                                assetIcons.price
+                                                            }
+                                                            alt=""
+                                                        />
+                                                    )}
+                                                    {item.price}
+                                                </small>
+                                                {getItemEffectType(
+                                                    item,
+                                                    locale,
+                                                ) && (
+                                                    <span className="item-effect-type">
+                                                        {getItemEffectType(
+                                                            item,
+                                                            locale,
+                                                        )}
+                                                    </span>
+                                                )}
+                                                {renderItemPropertyTags(
+                                                    item,
+                                                    locale,
+                                                )}
+                                                {item.description?.[locale] && (
+                                                    <p className="item-description">
+                                                        {
+                                                            item.description[
+                                                                locale
+                                                            ]
+                                                        }
+                                                    </p>
+                                                )}
+                                            </>
+    );
+    const goToBuild = () => {
+        const build = document.getElementById("build-panel");
+        if (build && build.getBoundingClientRect().top > 100) {
+            itemBrowsePosition.current = window.scrollY;
+        }
+        build?.focus({ preventScroll: true });
+        build?.scrollIntoView({ block: "start" });
+    };
+    const goToItems = () => {
+        const target = itemBrowseControl.current ?? document.getElementById("items-panel");
+        target?.focus({ preventScroll: true });
+        if (itemBrowsePosition.current !== null) window.scrollTo({ top: itemBrowsePosition.current });
+        else target?.scrollIntoView({ block: "start" });
+    };
+    const pageHeader = (
+        <header className="page-header">
+            <span className="site-brand">DEADLOCK <small>BUILD SIMULATOR</small></span>
+            <button type="button" className="language-toggle" lang={locale === "ja" ? "en" : "ja"}
+                aria-label={locale === "ja" ? "Switch language to English" : "言語を日本語に切り替える"}
+                onClick={() => setLocale((current) => current === "ja" ? "en" : "ja")}>
+                {t.lang}
+            </button>
+        </header>
+    );
     if (isLoading) {
         return (
-            <main className="app-shell status-screen">
-                <p>{t.loading}</p>
-            </main>
+            <>{pageHeader}<main className="status-screen" aria-busy="true">
+                <p role="status">{t.loading}</p>
+            </main></>
         );
     }
 
     if (error || !hero || !stats) {
         return (
-            <main className="app-shell status-screen">
+            <>{pageHeader}<main className="status-screen">
                 <p>{t.error}</p>
                 <small>{error}</small>
                 <button
@@ -646,12 +752,12 @@ export default function App() {
                 >
                     {t.retry}
                 </button>
-            </main>
+            </main></>
         );
     }
 
     return (
-        <main className="app-shell">
+        <>{pageHeader}<main className="app-shell">
             <section className="left-panel">
                 <header className="top-bar">
                     <div className="hero-selector">
@@ -727,7 +833,7 @@ export default function App() {
                 <section className="mobile-build-summary" aria-label={t.build}>
                     <div className="mobile-summary-heading">
                         <h2>{t.build}</h2>
-                        <small>{selectedItems.length}/12</small>
+                        <button type="button" className="summary-link" onClick={goToBuild}>{locale === "ja" ? "すべての属性" : "All attributes"} →</button>
                     </div>
                     <div className="mobile-selected-items">
                         {sortedSelectedItems.length > 0 ? (
@@ -767,7 +873,9 @@ export default function App() {
                         ))}
                     </div>
                 </section>
-                <div className="item-sections" aria-label={t.items}>
+                <div className="item-sections" id="items-panel" tabIndex={-1} aria-label={t.items}
+                    onFocusCapture={(event) => { if (event.target instanceof HTMLButtonElement) itemBrowseControl.current = event.target; }}>
+                    <p className="item-help">{locale === "ja" ? "アイコンで選択・解除。「詳細」で効果を確認できます。" : "Tap an icon to add or remove. Open Details to read its effects."}</p>
                     {itemSections.map((section) => (
                         <section
                             className="item-section"
@@ -792,101 +900,43 @@ export default function App() {
                             </h2>
                             <div className="item-grid">
                                 {section.items.map((item) => (
+                                    <div className="item-tile" key={item.id}>
                                     <PopoverButton
                                         className={`item-card icon-only-card${selectedItems.some((selected) => selected.itemId === item.id) ? " is-selected" : ""}`}
-                                        key={item.id}
                                         onClick={() => toggleItem(item.id)}
                                         aria-label={formatItemDetails(item)}
                                         aria-pressed={selectedItems.some(
                                             (selected) =>
                                                 selected.itemId === item.id,
                                         )}
-                                        tooltip={
-                                            <>
-                                                <strong>
-                                                    {item.name[locale]}
-                                                </strong>
-                                                {item.upgradeRelations?.componentIds.length ? <small>{locale === "ja" ? "構成元" : "Components"}: {itemNames(item.upgradeRelations.componentIds)}</small> : null}
-                                                {upgradeIndex.directUpgradesByComponentId.get(item.id)?.size ? <small>{locale === "ja" ? "アップグレード先" : "Upgrades to"}: {itemNames([...upgradeIndex.directUpgradesByComponentId.get(item.id)!])}</small> : null}
-                                                {!item.upgradeRelations || item.upgradeRelations.status === "unresolved" ? <small>{locale === "ja" ? "構成関係の一部または全部が未確認です。" : "Some or all component relationships are unverified."}</small> : null}
-                                                <small>
-                                                    {item.slotType &&
-                                                        assetIcons.categories[
-                                                            item.slotType
-                                                        ] && (
-                                                            <img
-                                                                className="inline-icon"
-                                                                src={
-                                                                    assetIcons
-                                                                        .categories[
-                                                                        item
-                                                                            .slotType
-                                                                    ]
-                                                                }
-                                                                alt=""
-                                                            />
-                                                        )}
-                                                    {item.category[locale]} ·{" "}
-                                                    {assetIcons.price && (
-                                                        <img
-                                                            className="inline-icon"
-                                                            src={
-                                                                assetIcons.price
-                                                            }
-                                                            alt=""
-                                                        />
-                                                    )}
-                                                    {item.price}
-                                                </small>
-                                                {getItemEffectType(
-                                                    item,
-                                                    locale,
-                                                ) && (
-                                                    <span className="item-effect-type">
-                                                        {getItemEffectType(
-                                                            item,
-                                                            locale,
-                                                        )}
-                                                    </span>
-                                                )}
-                                                {renderItemPropertyTags(
-                                                    item,
-                                                    locale,
-                                                )}
-                                                {item.description?.[locale] && (
-                                                    <p className="item-description">
-                                                        {
-                                                            item.description[
-                                                                locale
-                                                            ]
-                                                        }
-                                                    </p>
-                                                )}
-                                            </>
-                                        }
+                                        tooltip={renderItemDetails(item)}
                                     >
                                         {renderIcon(
                                             item.icon,
                                             item.name[locale],
                                             "item-icon",
                                         )}
+                                        <span className="item-card-name">{item.name[locale]}</span>
+                                        <span className="item-selected-mark" aria-hidden="true">✓</span>
                                     </PopoverButton>
+                                    <button type="button" className="item-detail-button"
+                                        aria-label={`${locale === "ja" ? "詳細" : "Details"}: ${item.name[locale]}`}
+                                        aria-haspopup="dialog" onClick={() => setInspectedItemId(item.id)}>
+                                        {locale === "ja" ? "詳細" : "Details"}
+                                    </button>
+                                    </div>
                                 ))}
                             </div>
                         </section>
                     ))}
                 </div>
             </section>
-            <section className="right-panel">
+            <section className="right-panel" id="build-panel" tabIndex={-1} aria-label={t.build}>
                 <div className="right-header">
                     <h2>{t.build}</h2>
-                    <button
-                        className="language-toggle"
-                        onClick={() => setLocale(locale === "ja" ? "en" : "ja")}
-                    >
-                        {t.lang}
-                    </button>
+                    <small>{selectedItems.length}/12</small>
                 </div>
+                <p className="build-help">{locale === "ja" ? "選択済みのアイテムを押すと解除できます。" : "Select an equipped item to remove it."}</p>
                 <section className="build-list">
                     {Array.from({ length: 12 }, (_, index) => {
                         const selected = sortedSelectedItems[index];
@@ -912,7 +962,7 @@ export default function App() {
                                 className="build-item"
                                 key={selected.instanceId}
                                 title={item.name[locale]}
-                                aria-label={`${item.name[locale]} - remove`}
+                                aria-label={`${item.name[locale]} - ${locale === "ja" ? "解除" : "remove"}`}
                                 onClick={() => toggleItem(item.id)}
                             >
                                 <div className="build-item-main">
@@ -1062,57 +1112,48 @@ export default function App() {
                     </section>
                 </section>
             </section>
+            <nav className="mobile-navigation" aria-label={locale === "ja" ? "ページ内移動" : "Page sections"}>
+                <button type="button" onClick={goToItems} aria-controls="items-panel">{t.items}</button>
+                <button type="button" onClick={goToBuild} aria-controls="build-panel">{locale === "ja" ? "ビルド・属性" : "Build & attributes"} <span>{selectedItems.length}/12</span></button>
+            </nav>
+            {inspectedItem && (
+                <Modal title={inspectedItem.name[locale]} closeLabel={locale === "ja" ? "閉じる" : "Close"} onClose={() => setInspectedItemId(undefined)}>
+                    <div className="item-detail-content">{renderItemDetails(inspectedItem)}</div>
+                    <button type="button" className="detail-select-button" onClick={() => toggleItem(inspectedItem.id)}
+                        aria-pressed={selectedItems.some((selected) => selected.itemId === inspectedItem.id)}>
+                        {selectedItems.some((selected) => selected.itemId === inspectedItem.id)
+                            ? (locale === "ja" ? "ビルドから解除" : "Remove from build")
+                            : (locale === "ja" ? "ビルドに追加" : "Add to build")}
+                    </button>
+                    <p className="detail-feedback" role="status">{selection.notice?.itemId === inspectedItem.id ? selectionMessage : ""}</p>
+                </Modal>
+            )}
             {isHeroModalOpen && (
-                <div
-                    className="modal-backdrop"
-                    role="dialog"
-                    aria-modal="true"
-                    aria-labelledby="hero-modal-title"
-                >
-                    <div className="modal" ref={modalRef}>
-                        <div className="modal-heading">
-                            <h2 id="hero-modal-title">{t.selectHero}</h2>
-                            <button
-                                onClick={() => setHeroModalOpen(false)}
-                                aria-label={
-                                    locale === "ja" ? "閉じる" : "Close"
-                                }
-                            >
-                                <X />
-                            </button>
-                        </div>
+                <Modal title={t.selectHero} closeLabel={locale === "ja" ? "閉じる" : "Close"} onClose={() => setHeroModalOpen(false)}>
                         <div className="hero-choice-grid">
                             {heroes.map((candidate) => (
-                                <PopoverButton
-                                    className="hero-choice icon-only-card"
+                                <button
+                                    className={`hero-choice icon-only-card${candidate.id === heroId ? " is-selected" : ""}`}
+                                    aria-pressed={candidate.id === heroId}
                                     key={candidate.id}
                                     onClick={() => {
                                         setHeroId(candidate.id);
                                         setHeroModalOpen(false);
                                     }}
                                     aria-label={formatHeroDetails(candidate)}
-                                    tooltip={
-                                        <>
-                                            <strong>
-                                                {candidate.name[locale]}
-                                            </strong>
-                                            <small>
-                                                {candidate.role[locale]}
-                                            </small>
-                                        </>
-                                    }
                                 >
                                     {renderIcon(
                                         candidate.icon,
                                         candidate.name[locale],
                                         "hero-choice-icon",
                                     )}
-                                </PopoverButton>
+                                    <span className="hero-choice-name">{candidate.name[locale]}</span>
+                                    {candidate.role[locale] && <small className="hero-choice-role">{candidate.role[locale]}</small>}
+                                </button>
                             ))}
                         </div>
-                    </div>
-                </div>
+                </Modal>
             )}
-        </main>
+        </main></>
     );
 }

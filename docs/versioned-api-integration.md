@@ -1,5 +1,10 @@
 # バージョン付き保存データの API 接続（ローカル準備）
 
+> 2026-10-26 update: local projection work replaces the full-bundle screen read
+> RPC and application write grants described below. See
+> [display projection and import](display-projection-and-import.md) for current
+> proposed access, measurements and activation gates. Published a5ca31b is unchanged.
+
 2026-10-26。承認済みの専用 PostgreSQL 16 で保存・復旧・競合を検証済み。
 Supabase への適用・本番設定変更は未実施。[実 DB 検証結果](postgresql-validation.md) を参照。
 

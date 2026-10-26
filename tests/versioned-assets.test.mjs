@@ -104,7 +104,7 @@ async function isolatedDatabase() {
   const db=new PGlite();
   await db.exec('create role anon; create role authenticated; create role service_role bypassrls; grant usage on schema public to anon, authenticated, service_role;');
   await db.exec(sql);
-  await db.exec('set role service_role;');
+  // Owner-only management connection; the application role cannot publish.
   const client={rpc:async(name,args)=>{
     try {
       const result=name==='read_deadlock_asset_release'
@@ -126,6 +126,7 @@ test('SQL: atomic publication, immutable history, idempotence and CAS protect th
     assert.equal((await repository.readActive()).revision,2);
     const counts=await db.query('select count(*)::int as n from public.deadlock_asset_snapshots');
     assert.equal(counts.rows[0].n,2);
+    await db.exec('set role service_role;');
     await assert.rejects(db.query('update public.deadlock_asset_snapshots set content_hash=content_hash'),/permission denied/);
     await assert.rejects(db.query('delete from public.deadlock_normalized_snapshots'),/permission denied/);
   } finally { await db.close(); }
@@ -159,7 +160,7 @@ test('SQL: RLS and explicit grants deny anonymous/authenticated reads and public
     await repository.publish(bundle,null);
     const tables=await db.query("select relname,relrowsecurity from pg_class where relname in ('deadlock_asset_snapshots','deadlock_normalized_snapshots','deadlock_active_asset_release')");
     assert.equal(tables.rows.length,3); assert.ok(tables.rows.every(r=>r.relrowsecurity));
-    for(const role of ['anon','authenticated']) {
+    for(const role of ['anon','authenticated','service_role']) {
       await db.exec('reset role;'); await db.exec('set role '+role+';');
       await assert.rejects(db.query('select * from public.deadlock_asset_snapshots'),/permission denied/);
       await assert.rejects(db.query('select public.read_deadlock_asset_release()'),/permission denied/);

@@ -1,4 +1,5 @@
--- DRAFT ONLY. Validated in isolated PostgreSQL 16 and in-memory PGlite.
+-- DRAFT ONLY. Read-only application grants revised after the PG16 validation.
+-- The revised permission profile requires fresh validation before production.
 -- Not registered as a migration and not applied to any Supabase project.
 -- Supabase CLI is not installed in this environment. After review, create a
 -- migration with `supabase migration new versioned_asset_snapshots` and use this
@@ -58,14 +59,13 @@ create table public.deadlock_normalized_snapshots (
 alter table public.deadlock_asset_snapshots enable row level security;
 alter table public.deadlock_normalized_snapshots enable row level security;
 
--- Reads remain server-side. Old snapshot rows are immutable to service_role.
+-- Full raw/catalog reads and all writes are owner-only. The display migration
+-- separately grants only the columns required by the small read RPC.
 revoke all on table public.deadlock_asset_snapshots from public, anon, authenticated;
 revoke all on table public.deadlock_normalized_snapshots from public, anon, authenticated;
 -- Append-only for the application role; database owners can still maintain data.
 revoke all on table public.deadlock_asset_snapshots from service_role;
 revoke all on table public.deadlock_normalized_snapshots from service_role;
-grant select, insert on table public.deadlock_asset_snapshots to service_role;
-grant select, insert on table public.deadlock_normalized_snapshots to service_role;
 
 create table public.deadlock_active_asset_release (
   singleton boolean primary key default true check (singleton),
@@ -78,7 +78,7 @@ create table public.deadlock_active_asset_release (
 );
 alter table public.deadlock_active_asset_release enable row level security;
 revoke all on table public.deadlock_active_asset_release from public, anon, authenticated, service_role;
-grant select, insert, update on table public.deadlock_active_asset_release to service_role;
+grant select on table public.deadlock_active_asset_release to service_role;
 
 create function public.read_deadlock_asset_release()
 returns jsonb language sql security invoker set search_path = '' as $$
@@ -140,7 +140,6 @@ $$;
 
 revoke all on function public.read_deadlock_asset_release() from public, anon, authenticated, service_role;
 revoke all on function public.publish_deadlock_asset_release(jsonb, jsonb, bigint) from public, anon, authenticated, service_role;
-grant execute on function public.read_deadlock_asset_release() to service_role;
-grant execute on function public.publish_deadlock_asset_release(jsonb, jsonb, bigint) to service_role;
+-- Both full-bundle functions are administrative, not application RPCs.
 
 commit;
