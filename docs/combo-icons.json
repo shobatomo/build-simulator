@@ -1,0 +1,110 @@
+{
+  "clientVersion": 6819,
+  "source": "https://api.deadlock-api.com/v1/assets/items?language=english&client_version=6819",
+  "assets": [
+    {
+      "name": "extra-health",
+      "path": "/combo/extra-health.webp",
+      "source": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/extra_health.webp",
+      "bytes": 7272,
+      "sha256": "9d4a43e954499394d22ab37e4ecd70f47261f88679d9eef9278fcfffb5fc48d2"
+    },
+    {
+      "name": "extra-spirit",
+      "path": "/combo/extra-spirit.webp",
+      "source": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/extra_spirit.webp",
+      "bytes": 22674,
+      "sha256": "980e052a18257b01e8042d5b0f135e75d1475631b1bd59250c59f131a0ea2232"
+    },
+    {
+      "name": "improved-spirit",
+      "path": "/combo/improved-spirit.webp",
+      "source": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/improved_spirit.webp",
+      "bytes": 19276,
+      "sha256": "00c7316d0267dd2199d3469ca4a44a3cf2029b8307b44f8150fd8b3809f7bdf9"
+    },
+    {
+      "name": "bullet-resilience",
+      "path": "/combo/bullet-resilience.webp",
+      "source": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/bullet_resilience.webp",
+      "bytes": 29788,
+      "sha256": "611b0ab09d0819caaa06c776d9a09e75829fd4c92db53ebf795b126ba75c6521"
+    },
+    {
+      "name": "spirit-resilience",
+      "path": "/combo/spirit-resilience.webp",
+      "source": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/spirit_resilience.webp",
+      "bytes": 30880,
+      "sha256": "25ef9efd38f349c3a80c8427b34a1225674c52266bc959127d088d2be97ee05f"
+    },
+    {
+      "name": "shot",
+      "path": "/combo/shot.webp",
+      "source": "https://assets-bucket.deadlock-api.com/assets-api-res/images/abilities/weapon_damage.webp",
+      "bytes": 1092,
+      "sha256": "3fce98db2602af9699a6b8beb42ac7cbe7848efc5b8a51ee0f79c4d884982de7"
+    },
+    {
+      "name": "uppercut",
+      "path": "/combo/uppercut.webp",
+      "source": "https://assets-bucket.deadlock-api.com/assets-api-res/images/abilities/bebop/bebop_uppercut.webp",
+      "bytes": 2516,
+      "sha256": "656b027f7645eda1d9181b7f25b2ab9df1456e1d91553b044c158581dc0af582"
+    },
+    {
+      "name": "bomb",
+      "path": "/combo/bomb.webp",
+      "source": "https://assets-bucket.deadlock-api.com/assets-api-res/images/abilities/bebop/bebop_sticky_bomb.webp",
+      "bytes": 4248,
+      "sha256": "abb834207f31e2856c02faf89ac00a6335ac1a849c093aff8c8092e970c8d1cd"
+    },
+    {
+      "name": "hook",
+      "path": "/combo/hook.webp",
+      "source": "https://assets-bucket.deadlock-api.com/assets-api-res/images/abilities/bebop/bebop_hook.webp",
+      "bytes": 1290,
+      "sha256": "4c8e89bebb9b1062ac27b7ab28cb717b51ccb6dacfea166e1e7a1bace01574b8"
+    },
+    {
+      "name": "beam",
+      "path": "/combo/beam.webp",
+      "source": "https://assets-bucket.deadlock-api.com/assets-api-res/images/abilities/bebop/bebop_hyper_beam.webp",
+      "bytes": 3740,
+      "sha256": "18c0ebc99b37c4b04f41471cdfaf799d7cff90d9824c1d5016a647b199889fe9"
+    },
+    {
+      "name": "melee",
+      "path": "/combo/melee.webp",
+      "source": "https://assets-bucket.deadlock-api.com/assets-api-res/images/abilities/melee_damage.webp",
+      "bytes": 2226,
+      "sha256": "c6ae6dc8779b78ebd3e9763f82eb76004cee866669129a071a702b25e98b4587"
+    },
+    {
+      "name": "bullet-resist",
+      "path": "/combo/bullet-resist.svg",
+      "source": "https://assets-bucket.deadlock-api.com/assets-api-res/icons/icons/properties/armor_bullet_color.svg",
+      "bytes": 6785,
+      "sha256": "d1b571e32545156bfe81133ecf48898c72da1544237fa0ceb806418694f7e403"
+    },
+    {
+      "name": "spirit-resist",
+      "path": "/combo/spirit-resist.svg",
+      "source": "https://assets-bucket.deadlock-api.com/assets-api-res/icons/icons/properties/armor_spirit_color.svg",
+      "bytes": 2967,
+      "sha256": "dd016bdcf4cd42865f37772ccf93e198e43f673a3cd3d8785cabaa3a098bb6c4"
+    },
+    {
+      "name": "shield",
+      "path": "/combo/shield.svg",
+      "source": "https://assets-bucket.deadlock-api.com/assets-api-res/icons/icons/properties/armor_alt.svg",
+      "sourceProperty": "AirDropBulletShield",
+      "bytes": 6791,
+      "sha256": "a49529fd2101a263d735136fd561725c96b5632e7b86965b2ea3bb485fe9f750"
+    }
+  ],
+  "notes": [
+    "Game artwork exposed by public community-parsed assets; not a Valve official API.",
+    "Armor glyph is supplied for AirDropBulletShield; bullet/spirit resistance glyphs come from their item properties.",
+    "Orange-yellow and purple damage colors follow the user preference; no official-default claim."
+  ]
+}

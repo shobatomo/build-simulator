@@ -112,7 +112,7 @@ test('draft edits do not alter active battle; no attacks against stale build; re
  const live=s.battle;s=S.comboSessionReducer(s,{type:'item',side:'defender',id:'3633614685'});assert.equal(s.battle,live);assert.equal(s.draft.attacker.itemIds.length,0);assert.equal(s.draft.defender.itemIds.length,1);
  s=S.comboSessionReducer(s,{type:'act',action:{kind:'shot'}});assert.equal(s.battle,live);s=S.comboSessionReducer(s,{type:'start'});assert.equal(s.battle.pending.length,0);assert.equal(s.battle.health,1090);
  for(let n=0;n<4;n++)s=S.comboSessionReducer(s,{type:'act',action:{kind:'shot'}});assert.equal(s.battle.ammo,62);
- s=S.comboSessionReducer(s,{type:'act',action:{kind:'reset'}});assert.equal(s.battle.ammo,66);assert.equal(s.flash,null);
+ s=S.comboSessionReducer(s,{type:'act',action:{kind:'reset'}});assert.equal(s.battle.ammo,66);assert.deepEqual(plain(s.flashes),[]);
 });
 test('in-flight scenario is isolated from caller mutation; invalid wait preserves state',()=>{
  const x=scenario();const s=C.createCombo(x).state;x.attacker.level=30;assert.equal(s.scenario.attacker.level,1);

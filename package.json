@@ -4,7 +4,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "test": "node --test tests/sync-route.test.mjs tests/assets-foundation.test.mjs tests/combat.test.mjs tests/item-upgrades.test.mjs tests/versioned-assets.test.mjs tests/build-combat.test.mjs tests/asset-recovery.test.mjs tests/asset-rpc-transport.test.mjs tests/versioned-api.test.mjs tests/display-projection.test.mjs tests/asset-import-plan.test.mjs tests/combo-combat.test.mjs"
+    "test": "node --test tests/sync-route.test.mjs tests/assets-foundation.test.mjs tests/combat.test.mjs tests/item-upgrades.test.mjs tests/versioned-assets.test.mjs tests/asset-recovery.test.mjs tests/asset-rpc-transport.test.mjs tests/versioned-api.test.mjs tests/display-projection.test.mjs tests/asset-import-plan.test.mjs tests/build-combat.test.mjs tests/combo-combat.test.mjs tests/held-fire.test.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.108.2",

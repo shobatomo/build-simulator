@@ -63,8 +63,9 @@ export interface ComboState {
   pending: PendingHit[]; sequence: number; hits: ComboHit[];
   cumulative: { raw: number; afterResistance: number; health: number; shield: number; overkill: number };
   bombHits: number;
+  firing: { startedAtMs: number; elapsedMs: number; nextShotAtMs: number; shots: number } | null;
 }
-export type ComboAction = { kind: ComboAttack | 'reload' | 'reset' } | { kind: 'wait'; seconds: number };
+export type ComboAction = { kind: ComboAttack | 'reload' | 'reset' | 'startFire' } | { kind: 'wait'; seconds: number } | { kind: 'tickFire' | 'stopFire'; elapsedMs: number };
 export interface ComboTransition { state: ComboState; accepted: boolean; reason: string | null }
 
 export function defaultComboScenario(): ComboScenario {
@@ -163,7 +164,7 @@ export function createCombo(scenario: ComboScenario): { state: ComboState | null
     shields: { bullet: copy.defense.shields.bullet!, spirit: copy.defense.shields.spirit!, melee: copy.defense.shields.melee! },
     ammo: R.weapon.ammo, gunSpun: false, nextShotMs: 0,
     readyAt: { uppercut: 0, bomb: 0, hook: 0, beam: 0 }, weaponBuffUntil: 0, hookAmpUntil: 0,
-    pending: [], sequence: 0, hits: [], bombHits: 0,
+    pending: [], sequence: 0, hits: [], bombHits: 0, firing: null,
     cumulative: { raw: 0, afterResistance: 0, health: 0, shield: 0, overkill: 0 },
   } };
 }
@@ -184,42 +185,70 @@ function impact(s: ComboState, event: PendingHit) {
   s.hits = s.hits.slice(-200);
   if (event.attack === 'bomb') s.bombHits++;
 }
-function advance(s: ComboState, target: number) {
+function advance(s: ComboState, target: number, stopAtDeath = false) {
   s.pending.sort((a, b) => a.atMs - b.atMs || a.order - b.order);
   while (s.pending[0]?.atMs <= target) {
     const e = s.pending.shift()!;
     s.timeMs = e.atMs;
     impact(s, e);
+    if (stopAtDeath && s.health <= 0) return;
   }
   s.timeMs = target;
 }
 function queue(s: ComboState, attack: ComboAttack, type: ComboDamageType, raw: number, atMs: number, formula: string) {
   s.pending.push({ order: ++s.sequence, attack, type, raw, atMs, formula });
 }
+export function nextComboShotAt(s: ComboState): number {
+  return Math.max(s.timeMs, s.nextShotMs) + (s.gunSpun ? 0 : Math.round((s.weaponBuffUntil > s.timeMs ? R.weapon.fastWindup : R.weapon.windup)*1000));
+}
+function fireShot(s: ComboState, at: number) {
+  const a = s.resolved.attacker;
+  let raw = a.shot;
+  let formula = `${a.shot} 基礎射撃`;
+  if (s.weaponBuffUntil > at) { raw += a.shot * R.uppercut.buffPercent/100; formula += ' × 1.30（Uppercut・単独バフの仮定）'; }
+  if (s.hookAmpUntil > at) { raw *= 1 + R.hook.bulletAmpPercent/100; formula += ' × 1.20（Grapple・弾丸のみ）'; }
+  queue(s, 'shot', 'bullet', raw, at, formula); advance(s, at);
+  s.ammo--; s.gunSpun = true; s.nextShotMs = at + Math.round(R.weapon.cycle*1000);
+}
 export function transitionCombo(current: ComboState, action: ComboAction): ComboTransition {
   const reject = (reason: string): ComboTransition => ({ state: current, accepted: false, reason });
   if (action.kind === 'reset') return { state: createCombo(current.scenario).state!, accepted: true, reason: null };
+  const firingAction = action.kind === 'tickFire' || action.kind === 'stopFire';
+  if (firingAction && (!finite(action.elapsedMs, 0, 120000) || action.elapsedMs < (current.firing?.elapsedMs ?? 0))) return reject('射撃の経過時刻が不正です。');
+  if (firingAction && !current.firing) return { state: current, accepted: true, reason: null };
+  if (current.firing && !firingAction) return reject('射撃を離してから操作してください。');
   if (action.kind === 'wait' && (!finite(action.seconds, 0.01, 120))) return reject('待機時間は0.01〜120秒です。');
   if (current.health <= 0 && action.kind !== 'wait') return reject('相手のHPが0です。リセットしてください。');
-  if (!['shot','uppercut','bomb','hook','beam','wait','reload'].includes(action.kind)) return reject('未対応の操作です。');
+  if (!['shot','uppercut','bomb','hook','beam','wait','reload','startFire','tickFire','stopFire'].includes(action.kind)) return reject('未対応の操作です。');
   if (['uppercut','bomb','hook','beam'].includes(action.kind) && current.readyAt[action.kind as Ability] > current.timeMs) return reject(`クールダウン中です。残り${((current.readyAt[action.kind as Ability]-current.timeMs)/1000).toFixed(2)}秒。`);
-  if (action.kind === 'shot' && current.ammo === 0) return reject('弾切れです。リロードしてください。');
+  if ((action.kind === 'shot' || action.kind === 'startFire') && current.ammo === 0) return reject('弾切れです。リロードしてください。');
   // All mutations below are on a fresh copy. Rejected operations preserve identity and state.
-  const s: ComboState = { ...current, shields: { ...current.shields }, readyAt: { ...current.readyAt }, pending: current.pending.map(x=>({...x})), hits: [...current.hits], cumulative: { ...current.cumulative } };
+  const s: ComboState = { ...current, shields: { ...current.shields }, readyAt: { ...current.readyAt }, pending: current.pending.map(x=>({...x})), hits: [...current.hits], cumulative: { ...current.cumulative }, firing: current.firing ? {...current.firing} : null };
+  if (action.kind === 'startFire') {
+    s.firing = { startedAtMs: s.timeMs, elapsedMs: 0, nextShotAtMs: nextComboShotAt(s), shots: 0 };
+    return { state: s, accepted: true, reason: null };
+  }
+  if (action.kind === 'tickFire' || action.kind === 'stopFire') {
+    const hold = s.firing!;
+    const target = hold.startedAtMs + Math.floor(action.elapsedMs);
+    hold.elapsedMs = action.elapsedMs;
+    while (hold.nextShotAtMs <= target && s.health > 0 && s.ammo > 0) {
+      const at = hold.nextShotAtMs;
+      advance(s, at, true);
+      if (s.health <= 0) break;
+      fireShot(s, at); hold.shots++; hold.nextShotAtMs = s.nextShotMs;
+    }
+    if (s.health > 0 && s.ammo > 0) advance(s, target, true);
+    if (action.kind === 'stopFire' || s.health <= 0 || s.ammo === 0) { s.firing = null; s.gunSpun = false; }
+    return { state: s, accepted: true, reason: null };
+  }
   const stage = s.scenario.attacker.stages;
   const a = s.resolved.attacker;
   const started = s.timeMs;
   if (action.kind === 'wait') { s.gunSpun = false; advance(s, s.timeMs + Math.round(action.seconds*1000)); }
   else if (action.kind === 'reload') { s.gunSpun = false; advance(s, s.timeMs + Math.round(R.weapon.reload*1000)); s.ammo = R.weapon.ammo; }
   else if (action.kind === 'shot') {
-    const at = Math.max(s.timeMs, s.nextShotMs) + (s.gunSpun ? 0 : Math.round((s.weaponBuffUntil > s.timeMs ? R.weapon.fastWindup : R.weapon.windup)*1000));
-    // Buffs are evaluated at impact. Only the reviewed single gun buff and bullet-only amp apply.
-    let raw = a.shot;
-    let formula = `${a.shot} 基礎射撃`;
-    if (s.weaponBuffUntil > at) { raw += a.shot * R.uppercut.buffPercent/100; formula += ' × 1.30（Uppercut・単独バフの仮定）'; }
-    if (s.hookAmpUntil > at) { raw *= 1 + R.hook.bulletAmpPercent/100; formula += ' × 1.20（Grapple・弾丸のみ）'; }
-    queue(s, 'shot', 'bullet', raw, at, formula); advance(s, at);
-    s.ammo--; s.gunSpun = true; s.nextShotMs = at + Math.round(R.weapon.cycle*1000);
+    fireShot(s, nextComboShotAt(s));
   } else {
     s.gunSpun = false;
     if (action.kind === 'uppercut') {
