@@ -1,5 +1,6 @@
 import { COMBO_RULES as R } from './bebopComboRules';
 import { resolveUpgradeRelations } from './itemUpgrades';
+import { DEFENDER_RULES } from './defenderRules';
 
 export type ComboDamageType = 'bullet' | 'spirit' | 'melee';
 export type Ability = 'uppercut' | 'bomb' | 'hook' | 'beam';
@@ -43,7 +44,7 @@ export interface ComboStats {
   contributions: Array<{ label: string; health: number; spirit: number; shot: number }>;
 }
 export interface ResolvedCombo {
-  attacker: ComboStats; defender: ComboStats;
+  attacker: ComboStats; defender: ComboDefenseStats;
   resistance: Record<ComboDamageType, number>;
   belowResistance: { bullet: number; spirit: number };
 }
@@ -90,9 +91,9 @@ export function selectComboItem(build: ComboBuild, id: string): { build: ComboBu
 function finite(n: number | null | undefined, min = 0, max = 1e7): n is number {
   return typeof n === 'number' && Number.isFinite(n) && n >= min && n <= max;
 }
-export function assembleComboBuild(build: ComboBuild): { stats: ComboStats | null; issues: string[] } {
+function buildIssues(build:ComboBuild,heroAllowed:boolean):string[] {
   const issues: string[] = [];
-  if (build.heroId !== '15') issues.push('対応ヒーローはBebopのみです。');
+  if (!heroAllowed) issues.push('選択ヒーローはこの側の計算モデルに未対応です。');
   if (!Number.isInteger(build.level) || build.level < 1 || build.level > 36) issues.push('ブーンは1〜36の整数で指定してください。');
   if (build.itemIds.length > 12 || new Set(build.itemIds).size !== build.itemIds.length) issues.push('アイテムの重複または枠数が不正です。');
   for (const key of ['uppercut', 'bomb', 'hook', 'beam'] as const) if (!Number.isInteger(build.stages[key]) || build.stages[key] < 0 || build.stages[key] > 3) issues.push(`${key}: 強化段階は0〜3です。`);
@@ -102,6 +103,10 @@ export function assembleComboBuild(build: ComboBuild): { stats: ComboStats | nul
   }
   if (!['excluded', 'resolved'].includes(build.purchaseMode)) issues.push('購入ボーナスの扱いが未指定です。');
   if (build.purchaseMode === 'resolved' && Object.values(build.purchase).some(n => !finite(n))) issues.push('購入ボーナスは確認済みの加算値をすべて入力してください。');
+  return issues;
+}
+export function assembleComboBuild(build: ComboBuild): { stats: ComboStats | null; issues: string[] } {
+  const issues=buildIssues(build,build.heroId==='15');
   if (issues.length) return { stats: null, issues };
   const n = build.level - 1;
   const contributions = [{ label: 'Bebop 基礎＋ブーン成長（加算の仮定）', health: R.hero.health + n * R.hero.growth.health, spirit: n * R.hero.growth.spirit, shot: R.weapon.damage + n * R.hero.growth.shot }];
@@ -122,8 +127,32 @@ export function assembleComboBuild(build: ComboBuild): { stats: ComboStats | nul
   return { stats, issues };
 }
 
+export interface ComboDefenseStats {
+  heroId:string; name:string; image:string; maxHealth:number;
+  bulletSources:number[]; spiritSources:number[]; thresholds:ComboStats['thresholds'];
+}
+export function assembleComboDefense(build:ComboBuild):{stats:ComboDefenseStats|null;issues:string[]} {
+  const hero=DEFENDER_RULES[build.heroId as keyof typeof DEFENDER_RULES];
+  const issues=buildIssues(build,!!hero);
+  if(issues.length||!hero)return {stats:null,issues};
+  const n=build.level-1;
+  let health=hero.health+n*hero.healthGrowth;
+  const bulletSources=hero.bulletGrowth&&n?[n*hero.bulletGrowth]:[];
+  const spiritSources=hero.spiritGrowth&&n?[n*hero.spiritGrowth]:[];
+  const thresholds:ComboStats['thresholds']={bullet:null,spirit:null};
+  for(const id of build.itemIds){
+    const item=R.items.find(i=>i.id===id)!;
+    health+=item.health??0; // Reviewed absence of HP contribution for the five supported items.
+    if(item.bullet!==null){bulletSources.push(item.bullet);thresholds.bullet=item.threshold;}
+    if(item.spiritResist!==null){spiritSources.push(item.spiritResist);thresholds.spirit=item.threshold;}
+  }
+  if(build.purchaseMode==='resolved')health+=build.purchase.health!;
+  if(!finite(health))return {stats:null,issues:['HPが計算上限を超えています。']};
+  return {stats:{heroId:hero.id,name:hero.name,image:hero.image,maxHealth:health,bulletSources,spiritSources,thresholds},issues};
+}
+
 export function resolveComboScenario(s: ComboScenario): { resolved: ResolvedCombo | null; issues: string[] } {
-  const a = assembleComboBuild(s.attacker), d = assembleComboBuild(s.defender);
+  const a = assembleComboBuild(s.attacker), d = assembleComboDefense(s.defender);
   const issues = [...a.issues.map(x => `自分: ${x}`), ...d.issues.map(x => `相手: ${x}`)];
   if (s.clientVersion !== R.clientVersion || s.sourceHash !== R.sourceHash) issues.push('データの版・出典ハッシュが一致しません。');
   if (s.hitLocation !== 'body' || s.penetrationPercent !== 0 || s.amplificationPercent !== 0) issues.push('ヘッドショット・追加貫通・追加増幅は未対応です。');

@@ -1,0 +1,39 @@
+{
+  "clientVersion": 6819,
+  "snapshotHash": "05dcbaf383cf31234de973db89cfa04cb6986943fb6e0ffa407f4b911b756e07",
+  "capturedAt": "2026-10-27T12:01:17.516Z",
+  "displaySha256": "7071b3264b33578908863d85d9f1fc9dc73157e91d40fb09a4adc973e6975605",
+  "displayCanonicalHash": "835266e26dcc3682303638f288b4b414484b4544809e068bcec466f5ffd53314",
+  "documents": [
+    {
+      "endpoint": "steam-info",
+      "locale": null,
+      "sourceUrl": "https://api.deadlock-api.com/v1/assets/steam-info?client_version=6819",
+      "contentHash": "62c98dd27f85e0a83436e388fb34577acdd5e6666e877ed0eb9f3415b40b058e"
+    },
+    {
+      "endpoint": "heroes",
+      "locale": "english",
+      "sourceUrl": "https://api.deadlock-api.com/v1/assets/heroes?client_version=6819&language=english&only_active=false",
+      "contentHash": "8612f6d071fcc3bdb1d65820aadc4bfbee01eef65f0b757de51addb99557c00d"
+    },
+    {
+      "endpoint": "heroes",
+      "locale": "japanese",
+      "sourceUrl": "https://api.deadlock-api.com/v1/assets/heroes?client_version=6819&language=japanese&only_active=false",
+      "contentHash": "ccb2effb46cfb7f5a100ff538370175d2a7c8608d8a59ef8357459bb9fa27360"
+    },
+    {
+      "endpoint": "items",
+      "locale": "english",
+      "sourceUrl": "https://api.deadlock-api.com/v1/assets/items?client_version=6819&language=english",
+      "contentHash": "0a43ce0cc488aaea04db7b28eb3771a65218c7f5059a32e7456515ad63641947"
+    },
+    {
+      "endpoint": "items",
+      "locale": "japanese",
+      "sourceUrl": "https://api.deadlock-api.com/v1/assets/items?client_version=6819&language=japanese",
+      "contentHash": "13df18b0c876ba0ec8614249c7e3c1d4672f319dbd14a102704ea29ca548e774"
+    }
+  ]
+}

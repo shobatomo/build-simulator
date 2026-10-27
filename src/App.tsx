@@ -11,11 +11,17 @@ import {
     type ButtonHTMLAttributes,
     type CSSProperties,
     type ReactNode,
+    type SetStateAction,
 } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
+import BuildTrial from './BuildTrial';
+import TrialSettings from './TrialSettings';
+import {captureBuilderTrial,defaultBuilderTrialScenario,type BuilderTrialSnapshot} from './domain/builderTrial';
+import {initialBuilderSides,updateBuilderSide,type BuilderSide} from './domain/builderSides';
+import type {ComboScenario} from './domain/comboCombat';
 import { X } from "lucide-react";
-import { fetchDeadlockData } from "./api/deadlockApi";
+import { fetchDeadlockData,fetchTrialData } from "./api/deadlockApi";
 import type {
     AssetIcons,
     Hero,
@@ -169,7 +175,7 @@ function Modal({ title, closeLabel, onClose, children }: {
             onKeyDown={(event) => {
                 if (event.key !== "Tab") return;
                 const controls = Array.from(event.currentTarget.querySelectorAll<HTMLElement>(
-                    'button:not([disabled]), input:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])',
+                    'button:not([disabled]), input:not([disabled]), a[href], summary, [tabindex]:not([tabindex="-1"])',
                 ));
                 const first = controls[0];
                 const last = controls[controls.length - 1];
@@ -399,7 +405,7 @@ const copy = {
     },
 };
 
-export default function App() {
+export default function App({trialConditions=null}:{trialConditions?:ComboScenario|null}={}) {
     const [locale, setLocale] = useState<Locale>("ja");
     const [heroes, setHeroes] = useState<Hero[]>([]);
     const [items, setItems] = useState<Item[]>([]);
@@ -407,13 +413,22 @@ export default function App() {
         categories: {},
         stats: {},
     });
-    const [heroId, setHeroId] = useState<string>();
-    const [level, setLevel] = useState(1);
+    const [editorSide,setEditorSide]=useState<BuilderSide>('attacker');
+    const [builds,setBuilds]=useState(initialBuilderSides);
+    const {heroId,level,selection}=builds[editorSide];
+    const setHeroId=(value:SetStateAction<string|undefined>)=>setBuilds(current=>updateBuilderSide(current,editorSide,b=>({...b,heroId:typeof value==='function'?value(b.heroId):value})));
+    const setLevel=(value:SetStateAction<number>)=>setBuilds(current=>updateBuilderSide(current,editorSide,b=>({...b,level:typeof value==='function'?value(b.level):value})));
+    const setSelection=(value:SetStateAction<ItemSelectionState>)=>setBuilds(current=>updateBuilderSide(current,editorSide,b=>({...b,selection:typeof value==='function'?value(b.selection):value})));
+    const [trialConfig,setTrialConfig]=useState(()=>trialConditions??defaultBuilderTrialScenario());
+    const [catalogMode,setCatalogMode]=useState<'legacy'|'trial'>('legacy');
+    const [catalogBusy,setCatalogBusy]=useState(false);
+    const [catalogError,setCatalogError]=useState<string>();
+    const [trialSnapshot,setTrialSnapshot]=useState<BuilderTrialSnapshot|null>(null);
+    const [dataMetadata,setDataMetadata]=useState<unknown>(null);
     const [isHeroModalOpen, setHeroModalOpen] = useState(false);
     const [inspectedItemId, setInspectedItemId] = useState<string>();
     const itemBrowsePosition = useRef<number | null>(null);
     const itemBrowseControl = useRef<HTMLElement | null>(null);
-    const [selection, setSelection] = useState<ItemSelectionState>({ items: [], notice: null });
     const selectedItems = selection.items;
     const [isLoading, setLoading] = useState(true);
     const [error, setError] = useState<string>();
@@ -429,17 +444,13 @@ export default function App() {
                 heroes: apiHeroes,
                 items: apiItems,
                 assets: apiAssets,
+                metadata: apiMetadata,
             } = await fetchDeadlockData();
             setHeroes(apiHeroes);
             setItems(apiItems);
             setAssetIcons(apiAssets.icons);
-            setHeroId((currentHeroId) => currentHeroId ?? apiHeroes[0]?.id);
-            setSelection((current) => ({
-                items: current.items.filter((selected) =>
-                    apiItems.some((item) => item.id === selected.itemId),
-                ),
-                notice: null,
-            }));
+            setDataMetadata(apiMetadata??null);
+            setBuilds(current=>({...current,attacker:{...current.attacker,heroId:current.attacker.heroId??apiHeroes[0]?.id}}));
         } catch (caughtError) {
             setError(
                 caughtError instanceof Error ? caughtError.message : t.error,
@@ -454,6 +465,23 @@ export default function App() {
     }, []);
 
     useEffect(() => { document.documentElement.lang = locale; }, [locale]);
+
+    const switchCatalog=async()=>{
+        setCatalogBusy(true);setCatalogError(undefined);
+        try {
+            const next=catalogMode==='legacy'?await fetchTrialData():await fetchDeadlockData();
+            const missing=Object.values(builds).some(build=>(build.heroId!==undefined&&!next.heroes.some(h=>h.id===build.heroId))||build.selection.items.some(selected=>!next.items.some(item=>item.id===selected.itemId)));
+            if(missing)throw new Error('選択中のヒーローまたはアイテムが切替先にありません。現在のデータと両ビルドを保持しました。');
+            setHeroes(next.heroes);setItems(next.items);setAssetIcons(next.assets.icons);setDataMetadata(next.metadata??null);
+            setBuilds(current=>({...current,attacker:{...current.attacker,heroId:current.attacker.heroId??'15'}}));setError(undefined);
+            setCatalogMode(catalogMode==='legacy'?'trial':'legacy');
+        } catch(error){setCatalogError(error instanceof Error?error.message:'データ切替に失敗しました。');}
+        finally{setCatalogBusy(false);}
+    };
+    const openTrial=()=>{
+        const capture=(side:BuilderSide)=>({hero:heroes.find(h=>h.id===builds[side].heroId)??null,level:builds[side].level,selectedItems:builds[side].selection.items,items,metadata:dataMetadata,locale});
+        setTrialSnapshot(captureBuilderTrial(capture('attacker'),trialConfig,capture('defender')));
+    };
 
     const hero = heroes.find((candidate) => candidate.id === heroId);
     const stats = useMemo(
@@ -734,7 +762,7 @@ export default function App() {
             </button>
         </header>
     );
-    if (isLoading) {
+    if (isLoading || catalogBusy) {
         return (
             <>{pageHeader}<main className="status-screen" aria-busy="true">
                 <p role="status">{t.loading}</p>
@@ -753,6 +781,8 @@ export default function App() {
                 >
                     {t.retry}
                 </button>
+                {catalogMode==='legacy'&&<button type="button" onClick={()=>void switchCatalog()}>試算用6819データで開始（固定版）</button>}
+                {catalogError&&<p role="alert">{catalogError}</p>}
             </main></>
         );
     }
@@ -812,7 +842,14 @@ export default function App() {
                     <h1>{t.title}</h1>
                     {t.subtitle && <p className="subtitle">{t.subtitle}</p>}
                     {t.helper && <p className="intro-helper">{t.helper}</p>}
-                    <p className="intro-helper"><Link href="/combat" style={{ display: "inline-block", minHeight: 44, padding: "8px 0", color: "var(--souls)" }}>{locale === "ja" ? "Bebop コンボ試算（試験版）を開く →" : "Open Bebop Combo Lab (Experimental · Japanese) →"}</Link></p>
+                    <div className="trial-editor-switch" role="group" aria-label="編集するビルド">
+                        <button type="button" aria-pressed={editorSide==='attacker'} disabled={catalogBusy} onClick={()=>{setEditorSide('attacker');setInspectedItemId(undefined);}}>{locale==='ja'?'自分':'My build'}</button>
+                        <button type="button" aria-pressed={editorSide==='defender'} disabled={catalogBusy} onClick={()=>{setEditorSide('defender');setInspectedItemId(undefined);}}>{locale==='ja'?'相手':'Opponent'}</button>
+                        <span>{locale==='ja'?'編集中：':'Editing: '}{editorSide==='attacker'?'自分':'相手'} · {hero?.name[locale]}</span>
+                    </div>
+                    <div className="trial-catalog"><strong>{catalogMode==='trial'?'試算用データ：6819（固定版）':'通常データ（固定版への切替前）'}</strong><button type="button" disabled={catalogBusy} onClick={()=>void switchCatalog()}>{catalogBusy?'読込中…':catalogMode==='trial'?'通常データへ戻す':'試算用6819へ切替（両ビルド保持）'}</button><small>試算は攻撃Bebop／相手Infernus・Bebopと5品に対応。版をそろえてから「試す」。選択を保持し、表示するゲームデータも6819へ切り替わります。</small>{catalogError&&<p role="alert">{catalogError}</p>}</div>
+                    <p className="intro-helper"><button type="button" disabled={catalogBusy} style={{minHeight:44,padding:'8px 16px'}} onClick={openTrial}>{locale==='ja'?'このビルドで試す':'Try this build'}</button> <Link href="/combat" style={{display:'inline-block',minHeight:44,padding:'8px 0',color:'var(--souls)'}}>{locale==='ja'?'従来の試験版':'Previous trial'}</Link></p>
+                    <TrialSettings scenario={trialConfig} onChange={setTrialConfig}/>
                     {t.pills.length > 0 && (
                         <div className="intro-pills" aria-label={t.items}>
                             {t.pills.map((pill) => (
@@ -1130,6 +1167,7 @@ export default function App() {
                     <p className="detail-feedback" role="status">{selection.notice?.itemId === inspectedItem.id ? selectionMessage : ""}</p>
                 </Modal>
             )}
+            {trialSnapshot&&<Modal title={locale==='ja'?'ビルドを試す（簡易試算）':'Try build (simplified trial)'} closeLabel={locale==='ja'?'閉じてビルドに戻る':'Close and return to build'} onClose={()=>setTrialSnapshot(null)}><BuildTrial snapshot={trialSnapshot}/></Modal>}
             {isHeroModalOpen && (
                 <Modal title={t.selectHero} closeLabel={locale === "ja" ? "閉じる" : "Close"} onClose={() => setHeroModalOpen(false)}>
                         <div className="hero-choice-grid">

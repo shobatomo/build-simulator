@@ -6,6 +6,7 @@ interface ApiResponse<T> {
 }
 
 interface DeadlockDataResponse {
+  metadata?: unknown;
   heroes: Hero[];
   items: Item[];
   assets: {
@@ -36,3 +37,6 @@ export const fetchItems = async () => {
 
 export const fetchDeadlockData = () =>
   getJson<DeadlockDataResponse>('/api/sync/deadlock-data-first');
+
+export const fetchTrialData = () =>
+  getJson<DeadlockDataResponse>('/api/trial-assets/6819');
